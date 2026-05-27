@@ -3,10 +3,12 @@ class UserModel {
   String name;
   final String _cpf;
   String _password;
+  DateTime date;
 
   UserModel({
     required this.id,
     required this.name,
+    required this.date,
     required String cpf,
     required String password,
   }) : _cpf = cpf,
@@ -22,6 +24,7 @@ class UserModel {
       name: json['name'],
       cpf: json['cpf'],
       password: json['password'],
+      date: json['date'],
     );
   }
 
@@ -30,5 +33,6 @@ class UserModel {
     'name': name,
     'cpf': cpf,
     'password': password,
+    'date': date,
   };
 }
