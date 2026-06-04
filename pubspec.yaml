@@ -39,4 +39,5 @@ flutter:
   assets:
     - .env
     - lib/app/assets/img/Logo.png
+    - lib/app/assets/img/LogoLonga.png
 
