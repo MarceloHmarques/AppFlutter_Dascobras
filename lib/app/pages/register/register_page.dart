@@ -1,8 +1,8 @@
-import 'package:appflutter/app/utils/utils_validators.dart';
+import 'package:DasCobras/app/utils/utils_validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:appflutter/app/viewmodels/register_service.dart';
-import 'package:appflutter/app/pages/login/login_page.dart';
+import 'package:DasCobras/app/viewmodels/register_viewmodel/register_viewmodel.dart';
+import 'package:DasCobras/app/pages/login/login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

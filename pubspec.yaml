@@ -1,7 +1,7 @@
-name: appflutter
-description: "A new Flutter project."
+name: DasCobras
+description: ""
 
-publish_to: 'none'
+publish_to: 'none'  
 
 version: 1.0.0+1
 
@@ -11,27 +11,30 @@ environment:
 dependencies:
   http: ^1.2.0
   shared_preferences: ^2.2.2
-
   supabase_flutter: ^2.12.4
-
   flutter_localizations:
     sdk: flutter
-
   flutter:
     sdk: flutter
-
-
+  provider: ^6.1.5
   cupertino_icons: ^1.0.8
   mask_text_input_formatter: ^2.9.0
-  
   flutter_dotenv: ^5.1.0
-  
+
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+
+  flutter_launcher_icons: ^0.14.4
+
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "lib/app/assets/img/LogoApp.png"
 
 flutter:
   uses-material-design: true
@@ -40,4 +43,5 @@ flutter:
     - .env
     - lib/app/assets/img/Logo.png
     - lib/app/assets/img/LogoLonga.png
+    - lib/app/assets/img/LogoApp.png
 

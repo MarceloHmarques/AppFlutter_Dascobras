@@ -1,5 +1,7 @@
-import 'package:appflutter/app/pages/login/login_page.dart';
+import 'package:DasCobras/app/pages/login/login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class InitialSplashPage extends StatefulWidget {
   const InitialSplashPage({super.key});
@@ -18,6 +20,10 @@ class _InitialSplashPageState extends State<InitialSplashPage> {
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
+    });
+
+    Future.microtask(() {
+      context.read<HomeSearchViewmodel>().loadProduct();
     });
   }
 

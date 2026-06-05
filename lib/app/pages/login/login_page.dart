@@ -1,7 +1,7 @@
-import 'package:appflutter/app/pages/home/home_page.dart';
-import 'package:appflutter/app/pages/register/register_page.dart';
-import 'package:appflutter/app/utils/utils_validators.dart';
-import 'package:appflutter/app/viewmodels/login_service.dart';
+import 'package:DasCobras/app/pages/home/home_page.dart';
+import 'package:DasCobras/app/pages/register/register_page.dart';
+import 'package:DasCobras/app/utils/utils_validators.dart';
+import 'package:DasCobras/app/viewmodels/login_viewmodel/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 
 class LoginPage extends StatefulWidget {
