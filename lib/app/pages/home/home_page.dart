@@ -167,7 +167,12 @@ class _HomePageState extends State<HomePage> {
                   }
 
                   return ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    padding: const EdgeInsets.fromLTRB(
+                      10,
+                      0,
+                      10,
+                      100, // espaço para o FloatingActionButton
+                    ),
                     itemCount: service.filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = service.filteredProducts[index];

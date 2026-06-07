@@ -1,6 +1,10 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 
 class AddProductDialog extends StatefulWidget {
@@ -18,6 +22,8 @@ class _AddProductDialogState extends State<AddProductDialog> {
   int? selectedCategory;
   String? selectedUnit;
 
+  File? selectedImage;
+
   @override
   void dispose() {
     nameController.dispose();
@@ -26,11 +32,41 @@ class _AddProductDialogState extends State<AddProductDialog> {
     super.dispose();
   }
 
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image.path);
+      });
+    }
+  }
+
+  Future<String> uploadImage() async {
+    if (selectedImage == null) {
+      return '';
+    }
+
+    final supabase = Supabase.instance.client;
+
+    final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+    await supabase.storage
+        .from('imageProducts')
+        .upload(fileName, selectedImage!);
+
+    return supabase.storage.from('imageProducts').getPublicUrl(fileName);
+  }
+
   Future<void> saveProduct() async {
     try {
+      String imageUrl = await uploadImage();
+
       await context.read<HomeSearchViewmodel>().addProduct(
         name: nameController.text.trim(),
-        imageurl: '',
+        imageurl: imageUrl,
         price: double.parse(priceController.text.replaceAll(',', '.')),
         stock: int.parse(stockController.text),
         categoryId: selectedCategory!,
@@ -75,15 +111,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
               const SizedBox(height: 25),
 
               InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Upload de imagem será implementado depois',
-                      ),
-                    ),
-                  );
-                },
+                onTap: pickImage,
                 child: Container(
                   height: 120,
                   width: double.infinity,
@@ -91,24 +119,34 @@ class _AddProductDialogState extends State<AddProductDialog> {
                     border: Border.all(color: const Color(0xFF0D3F87)),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.camera_alt_outlined,
-                        size: 35,
-                        color: Color(0xFF0D3F87),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Adicionar foto',
-                        style: TextStyle(
-                          color: Color(0xFF0D3F87),
-                          fontSize: 22,
+                  child: selectedImage == null
+                      ? const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.camera_alt_outlined,
+                              size: 35,
+                              color: Color(0xFF0D3F87),
+                            ),
+                            SizedBox(height: 10),
+                            Text(
+                              'Adicionar foto',
+                              style: TextStyle(
+                                color: Color(0xFF0D3F87),
+                                fontSize: 22,
+                              ),
+                            ),
+                          ],
+                        )
+                      : ClipRRect(
+                          borderRadius: BorderRadius.circular(10),
+                          child: Image.file(
+                            selectedImage!,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 120,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
                 ),
               ),
 
@@ -168,98 +206,35 @@ class _AddProductDialogState extends State<AddProductDialog> {
 
               const SizedBox(height: 15),
 
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Tipo de Unidade',
-                  style: TextStyle(color: Color(0xFF0D3F87), fontSize: 16),
-                ),
-              ),
-
-              const SizedBox(height: 5),
-
-              DropdownButtonFormField<String>(
-                value: selectedUnit,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'UN', child: Text('Unidade')),
-                  DropdownMenuItem(value: 'KG', child: Text('Quilograma')),
-                  DropdownMenuItem(value: 'L', child: Text('Litro')),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    selectedUnit = value;
-                  });
-                },
-              ),
-
-              const SizedBox(height: 15),
-
               Row(
                 children: [
                   Expanded(
-                    child: Column(
-                      children: [
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Preço (R\$) *',
-                            style: TextStyle(
-                              color: Color(0xFF0D3F87),
-                              fontSize: 16,
-                            ),
-                          ),
+                    child: TextField(
+                      controller: priceController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      decoration: InputDecoration(
+                        labelText: "Preço",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-
-                        const SizedBox(height: 5),
-
-                        TextField(
-                          controller: priceController,
-                          keyboardType: const TextInputType.numberWithOptions(
-                            decimal: true,
-                          ),
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
 
                   const SizedBox(width: 15),
 
                   Expanded(
-                    child: Column(
-                      children: [
-                        const Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Estoque *',
-                            style: TextStyle(
-                              color: Color(0xFF0D3F87),
-                              fontSize: 16,
-                            ),
-                          ),
+                    child: TextField(
+                      controller: stockController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: "Estoque",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-
-                        const SizedBox(height: 5),
-
-                        TextField(
-                          controller: stockController,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ],

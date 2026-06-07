@@ -1,3 +1,7 @@
+import 'dart:io';
+
+import 'package:image_picker/image_picker.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
@@ -17,6 +21,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
   late TextEditingController stockController;
 
   int selectedCategory = 1;
+  File? selectedImage;
 
   @override
   void initState() {
@@ -43,6 +48,34 @@ class _EditProductDialogState extends State<EditProductDialog> {
     super.dispose();
   }
 
+  Future<void> pickImage() async {
+    final picker = ImagePicker();
+
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image != null) {
+      setState(() {
+        selectedImage = File(image.path);
+      });
+    }
+  }
+
+  Future<String> uploadImage() async {
+    if (selectedImage == null) {
+      return widget.product.imageurl;
+    }
+
+    final supabase = Supabase.instance.client;
+
+    final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+    await supabase.storage
+        .from('imageProducts')
+        .upload(fileName, selectedImage!);
+
+    return supabase.storage.from('imageProducts').getPublicUrl(fileName);
+  }
+
   Future<void> saveProduct() async {
     print("BOTÃO SALVAR CLICADO");
 
@@ -53,9 +86,13 @@ class _EditProductDialogState extends State<EditProductDialog> {
       print("Estoque: ${stockController.text}");
       print("Categoria: $selectedCategory");
 
+      // Faz upload da nova imagem (ou mantém a antiga)
+      String imageUrl = await uploadImage();
+
       await context.read<HomeSearchViewmodel>().updateProduct(
         id: widget.product.id,
         name: nameController.text.trim(),
+        imageurl: imageUrl,
         price: double.parse(priceController.text.replaceAll(',', '.')),
         stock: int.parse(stockController.text),
         categoryId: selectedCategory,
@@ -112,28 +149,25 @@ class _EditProductDialogState extends State<EditProductDialog> {
                     decoration: BoxDecoration(
                       border: Border.all(color: const Color(0xFF0D3F87)),
                     ),
-                    child: Image.network(
-                      widget.product.imageurl,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.image_not_supported, size: 40);
-                      },
-                    ),
+                    child: selectedImage != null
+                        ? Image.file(selectedImage!, fit: BoxFit.contain)
+                        : Image.network(
+                            widget.product.imageurl,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(
+                                Icons.image_not_supported,
+                                size: 40,
+                              );
+                            },
+                          ),
                   ),
 
                   const SizedBox(width: 12),
 
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Alteração de imagem será implementada depois',
-                            ),
-                          ),
-                        );
-                      },
+                      onPressed: pickImage,
                       icon: const Icon(Icons.camera_alt_outlined),
                       label: const Text('Alterar Foto'),
                     ),
