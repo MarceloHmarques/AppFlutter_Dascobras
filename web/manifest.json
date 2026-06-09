@@ -1,11 +1,11 @@
 {
-    "name": "appflutter",
-    "short_name": "appflutter",
+    "name": "DasCobras",
+    "short_name": "DasCobras",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Sistema de Gestão de Armazém e Logística.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
