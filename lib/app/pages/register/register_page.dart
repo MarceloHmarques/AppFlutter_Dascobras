@@ -1,4 +1,6 @@
-import 'package:DasCobras/app/utils/utils_validators.dart';
+import 'package:DasCobras/app/service/validation/personal_validation.dart';
+import 'package:DasCobras/app/service/validation/mask.dart';
+import 'package:DasCobras/app/service/validation/personal%20_data_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:DasCobras/app/viewmodels/register_viewmodel/register_viewmodel.dart';
@@ -55,7 +57,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 decoration: const InputDecoration(labelText: 'Nome Completo'),
 
-                validator: (value) => UtilsValidators.name(value),
+                validator: (value) => PersonalDataValidation.name(value),
               ),
               const SizedBox(height: 20),
 
@@ -69,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 decoration: const InputDecoration(labelText: 'CPF'),
 
-                inputFormatters: [UtilsValidators().cpfMaskFormatter],
+                inputFormatters: [Mask.cpfMaskFormatter],
 
                 validator: (value) => UtilsValidators.cpf(value),
               ),
@@ -82,7 +84,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                 decoration: const InputDecoration(labelText: 'Email'),
 
-                validator: (value) => UtilsValidators.email(value),
+                validator: (value) => PersonalDataValidation.email(value),
               ),
               const SizedBox(height: 30),
 
@@ -108,7 +110,7 @@ class _RegisterPageState extends State<RegisterPage> {
               //campo de data
               TextFormField(
                 controller: dateController,
-                readOnly: true, //vai impedir do usuario diigtar
+                readOnly: true,
 
                 decoration: const InputDecoration(
                   labelText: 'Data de Nascimento',
@@ -132,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   }
                 },
 
-                validator: (value) => UtilsValidators.birth(value),
+                validator: (value) => PersonalDataValidation.birth(value),
               ),
 
               ElevatedButton(

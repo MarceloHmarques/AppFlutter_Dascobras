@@ -1,19 +1,17 @@
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-
 class UtilsValidators {
-  static String? name(String? value) {
-    if ((value == null) || (value.isEmpty)) return 'Nome obrigatório';
+  static bool utilsCpfCnpj(String value) {
+    value = value.replaceAll(RegExp(r'[.\-/]'), '');
+    final digits = value.replaceAll(RegExp(r'\D'), '');
 
-    if ((value.trim().isEmpty) ||
-        (value.length < 3) ||
-        (!RegExp(r'^[A-Za-zÀ-ÿ\s]+$').hasMatch(value))) {
-      return 'Nome inválido';
-    }
-    return null;
+    if (digits.length == 11) return utilsCpf(digits);
+    if (digits.length == 14) return utilsCnpj(digits);
+
+    return false;
   }
 
   static bool utilsCpf(String value) {
     value = value.replaceAll(RegExp(r'[.\-]'), '');
+    value = value.replaceAll(RegExp(r'\D'), '');
 
     if (value.length != 11) return false;
 
@@ -46,6 +44,35 @@ class UtilsValidators {
     return null;
   }
 
+  static bool utilsCnpj(String value) {
+    value = value.replaceAll(RegExp(r'[.\-/]'), '');
+    value = value.replaceAll(RegExp(r'\D'), '');
+
+    if (value.length != 14) return false;
+
+    if (RegExp(r'^(\d)\1{13}$').hasMatch(value)) return false;
+
+    List<int> pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    int sum = 0;
+    for (int i = 0; i < 12; i++) {
+      sum += int.parse(value[i]) * pesos1[i];
+    }
+    int one = sum % 11;
+    one = one < 2 ? 0 : 11 - one;
+    if (one != int.parse(value[12])) return false;
+
+    List<int> pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+    sum = 0;
+    for (int i = 0; i < 13; i++) {
+      sum += int.parse(value[i]) * pesos2[i];
+    }
+    int two = sum % 11;
+    two = two < 2 ? 0 : 11 - two;
+    if (two != int.parse(value[13])) return false;
+
+    return true;
+  }
+
   static String? passwordBasic(String? value) {
     if (value == null || value.isEmpty) return 'Senha obrigatória.';
     return null;
@@ -61,48 +88,6 @@ class UtilsValidators {
         (!RegExp('[@#*+.]').hasMatch(value))) {
       return 'Obrigatório pelo menos:\nUma letra Maiúscula;\nUma minuscula;\nUm caracter especial(ex: @ ,# ,* ,+ .);';
     }
-
-    return null;
-  }
-
-  final cpfMaskFormatter = MaskTextInputFormatter(
-    mask: '###.###.###-##',
-    filter: {"#": RegExp(r'[0-9]')},
-  );
-
-  static String? birth(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Selecione uma data';
-    }
-
-    final birthStripe = value.split('/');
-
-    final dateBirth = DateTime(
-      int.parse(birthStripe[2]),
-      int.parse(birthStripe[1]),
-      int.parse(birthStripe[0]),
-    );
-
-    final today = DateTime.now();
-
-    int ade = today.year - dateBirth.year;
-
-    if (today.month < dateBirth.month ||
-        today.month == dateBirth.month && today.day > dateBirth.day) {
-      ade--;
-    }
-
-    if (ade < 18) return 'Você deve ter pelo menos 18 anos';
-
-    return null;
-  }
-
-  static String? email(String? value) {
-    if (value == null || value.isEmpty) return 'Email Obrigatório';
-
-    final emailRegex = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
-
-    if (!emailRegex.hasMatch(value)) return 'Email inválido';
 
     return null;
   }

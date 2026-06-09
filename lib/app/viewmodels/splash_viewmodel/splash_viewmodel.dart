@@ -1,5 +1,5 @@
-import 'package:DasCobras/app/utils/auth_service/auth_session_service.dart';
-import 'package:DasCobras/app/utils/auth_service/biometric_service.dart';
+import 'package:DasCobras/app/service/auth_service/auth_session_service.dart';
+import 'package:DasCobras/app/service/auth_service/biometric_service.dart';
 
 class SplashViewmodel {
   final AuthSessionService _sessionService = AuthSessionService();
