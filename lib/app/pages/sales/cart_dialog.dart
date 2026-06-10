@@ -184,10 +184,87 @@ class CartPage extends StatelessWidget {
                                   Expanded(child: Text(item.product.name)),
 
                                   SizedBox(
-                                    width: 50,
-                                    child: Text("${item.quantity}"),
-                                  ),
+                                    width: 110,
+                                    child: Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () {
+                                            saleVm.decreaseQuantity(item);
+                                          },
+                                          child: const Icon(
+                                            Icons.remove_circle_outline,
+                                          ),
+                                        ),
 
+                                        Expanded(
+                                          child: TextFormField(
+                                            initialValue: item.quantity
+                                                .toString(),
+                                            textAlign: TextAlign.center,
+                                            keyboardType: TextInputType.number,
+                                            decoration: const InputDecoration(
+                                              isDense: true,
+                                              border: OutlineInputBorder(),
+                                              contentPadding:
+                                                  EdgeInsets.symmetric(
+                                                    vertical: 6,
+                                                  ),
+                                            ),
+                                            onFieldSubmitted: (value) {
+                                              final quantity =
+                                                  int.tryParse(value) ?? 1;
+
+                                              try {
+                                                saleVm.changeQuantity(
+                                                  item,
+                                                  quantity,
+                                                );
+                                              } catch (e) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: Text(
+                                                      e.toString().replaceFirst(
+                                                        'Exception: ',
+                                                        '',
+                                                      ),
+                                                    ),
+                                                    backgroundColor: Colors.red,
+                                                  ),
+                                                );
+                                              }
+                                            },
+                                          ),
+                                        ),
+
+                                        InkWell(
+                                          onTap: () {
+                                            try {
+                                              saleVm.increaseQuantity(item);
+                                            } catch (e) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    e.toString().replaceFirst(
+                                                      'Exception: ',
+                                                      '',
+                                                    ),
+                                                  ),
+                                                  backgroundColor: Colors.red,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                          child: const Icon(
+                                            Icons.add_circle_outline,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                   SizedBox(
                                     width: 70,
                                     child: Text(

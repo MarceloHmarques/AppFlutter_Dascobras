@@ -23,7 +23,7 @@ class ProductSearchModel {
     print(map["category"]);
 
     return ProductSearchModel(
-      id: map['id'],
+      id: map['id'] ?? 0,
       name: map['name'] ?? '',
       imageurl: map['imageurl'] ?? '',
       price: (map['price'] as num?)?.toDouble() ?? 0,

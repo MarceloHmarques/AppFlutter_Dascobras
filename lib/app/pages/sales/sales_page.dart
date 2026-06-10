@@ -7,7 +7,7 @@ import 'package:DasCobras/app/pages/home/home_page.dart';
 import 'package:DasCobras/app/pages/reports/reports_page.dart';
 import '../../model/customer_model.dart';
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
-import 'package:DasCobras/app/pages/client/client_page.dartclient_page.dart';
+import 'package:DasCobras/app/pages/client/client_page.dart';
 import 'package:DasCobras/app/pages/client/view_client_dialog.dart';
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 import 'cart_dialog.dart';
@@ -90,7 +90,6 @@ class _SalesPageState extends State<SalesPage> {
           children: [
             const SizedBox(height: 15),
 
-            // Logo acima da barra de busca de cliente
             Center(
               child: Image.asset(
                 'lib/app/assets/img/LogoLonga.png',

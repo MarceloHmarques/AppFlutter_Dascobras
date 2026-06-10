@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:DasCobras/app/pages/home/edit_product_dialog.dart';
 import 'package:DasCobras/app/pages/home/add_product_dialog.dart';
-import 'package:DasCobras/app/pages/client/client_page.dartclient_page.dart';
+import 'package:DasCobras/app/pages/client/client_page.dart';
 import 'package:DasCobras/app/pages/sales/sales_page.dart';
 import 'package:DasCobras/app/pages/reports/reports_page.dart';
 

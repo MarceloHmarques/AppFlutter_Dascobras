@@ -55,23 +55,32 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void increaseQuantity(ProductSearchModel product) {
-    final item = cart.firstWhere((e) => e.product.id == product.id);
+  void increaseQuantity(cartItem) {
+    if (cartItem.quantity >= cartItem.product.stock) {
+      throw Exception('Quantidade maior que o estoque disponível.');
+    }
 
-    if (item.quantity < product.stock) {
-      item.quantity++;
+    cartItem.quantity++;
+    notifyListeners();
+  }
+
+  void decreaseQuantity(cartItem) {
+    if (cartItem.quantity > 1) {
+      cartItem.quantity--;
+    } else {
+      cart.remove(cartItem);
     }
 
     notifyListeners();
   }
 
-  void decreaseQuantity(ProductSearchModel product) {
-    final item = cart.firstWhere((e) => e.product.id == product.id);
-
-    if (item.quantity > 1) {
-      item.quantity--;
+  void changeQuantity(cartItem, int value) {
+    if (value <= 0) {
+      cart.remove(cartItem);
+    } else if (value > cartItem.product.stock) {
+      throw Exception('Quantidade maior que o estoque disponível.');
     } else {
-      cart.remove(item);
+      cartItem.quantity = value;
     }
 
     notifyListeners();
@@ -142,15 +151,52 @@ class SaleViewModel extends ChangeNotifier {
   }
 
   Future<void> finishSale() async {
-    await saveSale(
-      paymentMethod: "PIX",
-      statusOrder: "PENDENTE",
-      userId: Supabase.instance.client.auth.currentUser?.id ?? "",
-    );
+    if (customer == null) {
+      throw Exception('Selecione um cliente.');
+    }
 
-    cart.clear();
-    customer = null;
+    if (cart.isEmpty) {
+      throw Exception('Carrinho vazio.');
+    }
 
-    notifyListeners();
+    try {
+      final saleResponse = await supabase
+          .from('sale')
+          .insert({
+            'customer_id': customer!.id,
+            'total': total,
+            'payment_method': 'DINHEIRO',
+            'status': 'CONCLUIDA',
+          })
+          .select()
+          .single();
+
+      final saleId = saleResponse['id'];
+
+      for (final item in cart) {
+        if (item.quantity > item.product.stock) {
+          throw Exception('Estoque insuficiente para ${item.product.name}.');
+        }
+
+        await supabase.from('sale_item').insert({
+          'sale_id': saleId,
+          'product_id': item.product.id,
+          'quantity': item.quantity,
+          'unit_price': item.product.price,
+          'subtotal': item.subtotal,
+        });
+
+        await supabase
+            .from('product')
+            .update({'stock': item.product.stock - item.quantity})
+            .eq('id', item.product.id);
+      }
+
+      cart.clear();
+      customer = null;
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Erro ao finalizar venda: $e');
+    }
   }
 }
