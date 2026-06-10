@@ -3,7 +3,7 @@ class ProductSearchModel {
   final String name;
   final String imageurl;
   final double price;
-  final int stock;
+  int stock;
   final int categoryId;
   final String category;
 

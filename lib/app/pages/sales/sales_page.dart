@@ -9,6 +9,9 @@ import '../../model/customer_model.dart';
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
 import 'package:DasCobras/app/pages/client/client_page.dartclient_page.dart';
 import 'package:DasCobras/app/pages/client/view_client_dialog.dart';
+import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
+import 'cart_dialog.dart';
+import 'package:DasCobras/app/pages/sales/add_product_cart_dialog.dart';
 
 class SalesPage extends StatefulWidget {
   const SalesPage({super.key});
@@ -157,7 +160,10 @@ class _SalesPageState extends State<SalesPage> {
                         onTap: () {
                           setState(() {
                             selectedCustomer = client;
+
                             clientSearchController.clear();
+
+                            context.read<SaleViewModel>().setCustomer(client);
                           });
 
                           context.read<ClientViewModel>().searchCustomer('');
@@ -259,7 +265,13 @@ class _SalesPageState extends State<SalesPage> {
                       IconButton(
                         onPressed: () {
                           setState(() {
-                            selectedCustomer = null;
+                            setState(() {
+                              selectedCustomer = null;
+                            });
+
+                            context.read<SaleViewModel>().removeCustomer();
+
+                            context.read<ClientViewModel>().searchCustomer('');
                           });
 
                           context.read<ClientViewModel>().searchCustomer('');
@@ -466,12 +478,10 @@ class _SalesPageState extends State<SalesPage> {
                               ),
                               child: IconButton(
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        '${product.name} adicionado ao carrinho',
-                                      ),
-                                    ),
+                                  showDialog(
+                                    context: context,
+                                    builder: (_) =>
+                                        AddProductCartDialog(product: product),
                                   );
                                 },
                                 icon: const Icon(
@@ -492,12 +502,26 @@ class _SalesPageState extends State<SalesPage> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF0D3F87),
-        onPressed: () {},
-        child: const Icon(Icons.shopping_cart_outlined, color: Colors.white),
+      floatingActionButton: Consumer<SaleViewModel>(
+        builder: (context, saleVm, _) {
+          return Badge(
+            label: Text("${saleVm.cart.length}"),
+            child: FloatingActionButton(
+              backgroundColor: const Color(0xFF0D3F87),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CartPage()),
+                );
+              },
+              child: const Icon(
+                Icons.shopping_cart_outlined,
+                color: Colors.white,
+              ),
+            ),
+          );
+        },
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 2,
         type: BottomNavigationBarType.fixed,

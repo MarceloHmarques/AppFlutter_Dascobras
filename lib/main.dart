@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:DasCobras/app/pages/initial_splash/initial_splash_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:DasCobras/app/pages/initial_splash/initial_splash_page.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/client_viewmodel/client_viewmodel.dart';
+import 'package:DasCobras/app/viewmodels/sale_viewmodel/sale_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,13 +24,15 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => HomeSearchViewmodel()),
+
         ChangeNotifierProvider(create: (_) => ClientViewModel()),
+
+        ChangeNotifierProvider(create: (_) => SaleViewModel()),
       ],
       child: const MyApp(),
     ),
   );
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -48,7 +52,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      home: InitialSplashPage(),
+      home: const InitialSplashPage(),
     );
   }
 }
