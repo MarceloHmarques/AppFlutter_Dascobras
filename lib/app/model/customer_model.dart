@@ -6,6 +6,7 @@ class CustomerModel {
   final String birthDate;
   final String phone;
   final String email;
+  final String customerType;
   final String cpforcnpj;
   final String state;
   final String city;
@@ -20,6 +21,7 @@ class CustomerModel {
     required this.birthDate,
     required this.phone,
     required this.email,
+    required this.customerType,
     required this.cpforcnpj,
     required this.state,
     required this.city,
@@ -34,12 +36,11 @@ class CustomerModel {
       id: map['id'],
       name: map['name'] ?? '',
       birthDate: map['birth_date'] != null
-    ? DateFormat('dd/MM/yyyy').format(
-        DateTime.parse(map['birth_date']),
-      )
-    : '',
+          ? DateFormat('dd/MM/yyyy').format(DateTime.parse(map['birth_date']))
+          : '',
       phone: map['phone'] ?? '',
       email: map['email'] ?? '',
+      customerType: map['customer_type'] ?? 'PF',
       cpforcnpj: map['cpforcnpj'] ?? '',
       state: map['state_'] ?? '',
       city: map['city'] ?? '',

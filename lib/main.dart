@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:DasCobras/app/pages/initial_splash/initial_splash_page.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
+import 'package:DasCobras/app/viewmodels/reports_viewmodel/reports_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/client_viewmodel/client_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/sale_viewmodel/sale_viewmodel.dart';
 
@@ -28,6 +29,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ClientViewModel()),
 
         ChangeNotifierProvider(create: (_) => SaleViewModel()),
+
+        ChangeNotifierProvider(create: (_) => ReportsViewModel()),
       ],
       child: const MyApp(),
     ),
