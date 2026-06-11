@@ -31,9 +31,8 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
   final _formKey = GlobalKey<FormState>();
 
   bool loading = false;
-
+  String customerType = 'PF';
   String? errorMessage;
-  String personType = 'PF';
   String? selectedState;
 
   Future<void> saveCustomer() async {
@@ -49,6 +48,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
         phone: phoneController.text,
         email: emailController.text,
         cpfOrCnpj: cpfController.text,
+        customerType: customerType,
         state: stateController.text,
         city: cityController.text,
         neighborhood: neighborhoodController.text,
@@ -135,7 +135,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                 ),
 
                 DropdownButtonFormField<String>(
-                  value: personType,
+                  value: customerType,
                   decoration: InputDecoration(
                     labelText: 'Tipo de cliente',
                     border: OutlineInputBorder(
@@ -151,7 +151,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                   ],
                   onChanged: (value) {
                     setState(() {
-                      personType = value!;
+                      customerType = value!;
                       cpfController.clear();
                     });
                   },
@@ -160,27 +160,27 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                 const SizedBox(height: 10),
 
                 buildField(
-                  personType == 'PF' ? 'CPF' : 'CNPJ',
+                  customerType == 'PF' ? 'CPF' : 'CNPJ',
                   cpfController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
-                    personType == 'PF'
+                    customerType == 'PF'
                         ? Mask.cpfMaskFormatter
                         : Mask.cnpjMaskFormatter,
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return personType == 'PF'
+                      return customerType == 'PF'
                           ? 'CPF obrigatório'
                           : 'CNPJ obrigatório';
                     }
 
-                    final valid = personType == 'PF'
+                    final valid = customerType == 'PF'
                         ? PersonalValidation.utilsCpf(value)
                         : PersonalValidation.utilsCnpj(value);
 
                     if (!valid) {
-                      return personType == 'PF'
+                      return customerType == 'PF'
                           ? 'CPF inválido'
                           : 'CNPJ inválido';
                     }

@@ -35,11 +35,17 @@ class _EditClientDialogState extends State<EditClientDialog> {
   bool loading = false;
 
   String? errorMessage;
-  String personType = 'PF';
+  String customerType = 'PF';
   String? selectedState;
   @override
   void initState() {
     super.initState();
+    final type = widget.client.customerType.trim().toUpperCase();
+
+    customerType = type == 'PJ' ? 'PJ' : 'PF';
+
+    print('TIPO SALVO: ${widget.client.customerType}');
+    print('TIPO USADO: $customerType');
 
     nameController = TextEditingController(text: widget.client.name);
     cpfController = TextEditingController(text: widget.client.cpforcnpj);
@@ -74,6 +80,7 @@ class _EditClientDialogState extends State<EditClientDialog> {
         birthDate: birthDateController.text,
         phone: phoneController.text,
         email: emailController.text,
+        customerType: customerType,
         cpfOrCnpj: cpfController.text,
         state: stateController.text,
         city: cityController.text,
@@ -159,7 +166,7 @@ class _EditClientDialogState extends State<EditClientDialog> {
                 ),
 
                 DropdownButtonFormField<String>(
-                  value: personType,
+                  value: customerType,
                   decoration: InputDecoration(
                     labelText: 'Tipo de cliente',
                     border: OutlineInputBorder(
@@ -175,7 +182,7 @@ class _EditClientDialogState extends State<EditClientDialog> {
                   ],
                   onChanged: (value) {
                     setState(() {
-                      personType = value!;
+                      customerType = value!;
                       cpfController.clear();
                     });
                   },
@@ -184,27 +191,27 @@ class _EditClientDialogState extends State<EditClientDialog> {
                 const SizedBox(height: 10),
 
                 buildField(
-                  personType == 'PF' ? 'CPF' : 'CNPJ',
+                  customerType == 'PF' ? 'CPF' : 'CNPJ',
                   cpfController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
-                    personType == 'PF'
+                    customerType == 'PF'
                         ? Mask.cpfMaskFormatter
                         : Mask.cnpjMaskFormatter,
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return personType == 'PF'
+                      return customerType == 'PF'
                           ? 'CPF obrigatório'
                           : 'CNPJ obrigatório';
                     }
 
-                    final valid = personType == 'PF'
+                    final valid = customerType == 'PF'
                         ? PersonalValidation.utilsCpf(value)
                         : PersonalValidation.utilsCnpj(value);
 
                     if (!valid) {
-                      return personType == 'PF'
+                      return customerType == 'PF'
                           ? 'CPF inválido'
                           : 'CNPJ inválido';
                     }
