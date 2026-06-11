@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 import '../../services/pdf_service.dart';
 import '../../viewmodels/home_viewmodel/home_search_viewmodel.dart';
-//import '../../services/email_service.dart';
+import 'package:share_plus/share_plus.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -325,19 +325,23 @@ class CartPage extends StatelessWidget {
                           backgroundColor: Colors.green,
                         ),
                         onPressed: () async {
-                          await PdfService.generate(saleVm);
+                          try {
+                            final pdfFile = await PdfService.generate(saleVm);
 
-                          print("Itens antes: ${saleVm.cart.length}");
-                          print("Cliente antes: ${saleVm.customer?.name}");
+                            await saleVm.finishSale();
 
-                          await saleVm.finishSale();
+                            await Share.shareXFiles([
+                              XFile(pdfFile.path),
+                            ], text: 'Pedido ${saleVm.customer?.name}');
 
-                          print("Itens depois: ${saleVm.cart.length}");
-                          print("Cliente depois: ${saleVm.customer?.name}");
+                            saleVm.cancelSale();
 
-                          await context
-                              .read<HomeSearchViewmodel>()
-                              .loadProduct();
+                            await context
+                                .read<HomeSearchViewmodel>()
+                                .loadProduct();
+                          } catch (e) {
+                            print(e);
+                          }
                         },
                         child: const Text(
                           "Finalizar",

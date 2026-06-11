@@ -154,7 +154,11 @@ class SaleViewModel extends ChangeNotifier {
     if (customer == null) {
       throw Exception('Selecione um cliente.');
     }
-
+    await saveSale(
+      paymentMethod: "PIx",
+      statusOrder: "Pendente",
+      userId: Supabase.instance.client.auth.currentUser?.id ?? "",
+    );
     if (cart.isEmpty) {
       throw Exception('Carrinho vazio.');
     }
