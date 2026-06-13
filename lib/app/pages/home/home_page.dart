@@ -108,37 +108,43 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0D3F87),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Text(
-                      selectedCategory,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 8),
-
                   GestureDetector(
                     onTap: openCategoryFilter,
                     child: Container(
-                      padding: const EdgeInsets.all(5),
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF0D3F87)),
-                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFF0D3F87),
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(7),
                       ),
                       child: const Icon(
                         Icons.filter_alt_outlined,
                         color: Color(0xFF0D3F87),
+                        size: 22,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 14),
+
+                  Container(
+                    height: 42,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0D3F87),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      selectedCategory,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -165,6 +171,18 @@ class _HomePageState extends State<HomePage> {
                     itemCount: service.filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = service.filteredProducts[index];
+
+                      final Color stockColor = product.stock == 0
+                          ? Colors.red
+                          : product.stock <= 10
+                          ? Colors.orange
+                          : const Color(0xFF0D3F87);
+
+                      final String stockText = product.stock == 0
+                          ? 'Sem estoque'
+                          : product.stock <= 10
+                          ? 'Últimas ${product.stock} unidades'
+                          : '${product.stock} em estoque';
 
                       return Container(
                         margin: const EdgeInsets.only(
@@ -247,7 +265,7 @@ class _HomePageState extends State<HomePage> {
                                       vertical: 4,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF0D3F87),
+                                      color: stockColor,
                                       borderRadius: BorderRadius.circular(5),
                                     ),
                                     child: Row(
@@ -260,7 +278,7 @@ class _HomePageState extends State<HomePage> {
                                         ),
                                         const SizedBox(width: 4),
                                         Text(
-                                          '${product.stock} em estoque',
+                                          stockText,
                                           style: const TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w600,
@@ -312,7 +330,7 @@ class _HomePageState extends State<HomePage> {
                                               "Excluir Produto",
                                             ),
                                             content: Text(
-                                              "Deseja realmente apagar o produto\n\n${product.name} ?",
+                                              "Deseja realmente apagar o produto?\n\n${product.name}",
                                             ),
                                             actions: [
                                               TextButton(
@@ -409,18 +427,21 @@ class _HomePageState extends State<HomePage> {
           switch (index) {
             case 0:
               break;
+
             case 1:
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const ClientPage()),
               );
               break;
+
             case 2:
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (_) => const SalesPage()),
               );
               break;
+
             case 3:
               Navigator.pushReplacement(
                 context,
