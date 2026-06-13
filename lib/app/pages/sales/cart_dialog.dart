@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
-import '../../services/pdf_service.dart';
+import '../../service/sale_service.dart/pdf_service.dart';
 import '../../viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:share_plus/share_plus.dart';
 

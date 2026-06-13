@@ -1,7 +1,7 @@
-import 'package:DasCobras/app/service/validation/personal_validation.dart';
-import 'package:DasCobras/app/service/validation/address_validation.dart';
-import 'package:DasCobras/app/service/validation/mask.dart';
-import 'package:DasCobras/app/service/validation/personal%20_data_validation.dart';
+import 'package:DasCobras/app/service/validation_service/personal_validation.dart';
+import 'package:DasCobras/app/service/validation_service/address_validation.dart';
+import 'package:DasCobras/app/service/validation_service/mask.dart';
+import 'package:DasCobras/app/service/validation_service/personal%20_data_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';

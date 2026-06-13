@@ -6,7 +6,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
-import '../viewmodels/sale_viewmodel/sale_viewmodel.dart';
+import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 
 class PdfService {
   static Future<File> generate(SaleViewModel saleVm) async {

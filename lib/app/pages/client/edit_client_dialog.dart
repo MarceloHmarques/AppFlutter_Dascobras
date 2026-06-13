@@ -4,10 +4,10 @@ import 'package:flutter/services.dart';
 
 import '../../model/customer_model.dart';
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
-import 'package:DasCobras/app/service/validation/personal_validation.dart';
-import 'package:DasCobras/app/service/validation/address_validation.dart';
-import 'package:DasCobras/app/service/validation/mask.dart';
-import 'package:DasCobras/app/service/validation/personal%20_data_validation.dart';
+import 'package:DasCobras/app/service/validation_service/personal_validation.dart';
+import 'package:DasCobras/app/service/validation_service/address_validation.dart';
+import 'package:DasCobras/app/service/validation_service/mask.dart';
+import 'package:DasCobras/app/service/validation_service/personal%20_data_validation.dart';
 
 class EditClientDialog extends StatefulWidget {
   final CustomerModel client;

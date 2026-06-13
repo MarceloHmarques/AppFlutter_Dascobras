@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:DasCobras/app/service/validation/product_validation.dart';
+import 'package:DasCobras/app/service/validation_service/product_validation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:DasCobras/app/service/validation/mask.dart';
+import 'package:DasCobras/app/service/validation_service/mask.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 
