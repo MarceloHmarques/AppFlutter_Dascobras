@@ -14,193 +14,282 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final RegisterService viewModel = RegisterService();
-
   final _formKey = GlobalKey<FormState>();
 
-  TextEditingController nameController = TextEditingController();
-
+  final TextEditingController nameController = TextEditingController();
   final TextEditingController _cpfController = TextEditingController();
-
   final TextEditingController _passwordController = TextEditingController();
-
-  TextEditingController dateController = TextEditingController();
-
+  final TextEditingController dateController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
   DateTime? selectDate;
 
+  bool _obscurePassword = true;
+  bool _isLoading = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cadastro')),
+      backgroundColor: Colors.white,
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                const SizedBox(height: 55),
 
-        child: Form(
-          key: _formKey,
+                Image.asset('lib/app/assets/img/LogoLonga.png', width: 190),
 
-          child: Column(
-            children: [
-              //campo do nome
-              TextFormField(
-                controller: nameController,
+                const SizedBox(height: 45),
 
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZÀ-ÿ ]')),
-                ],
-
-                keyboardType: TextInputType.name,
-
-                textInputAction: TextInputAction.next,
-
-                decoration: const InputDecoration(labelText: 'Nome Completo'),
-
-                validator: (value) => PersonalDataValidation.name(value),
-              ),
-              const SizedBox(height: 20),
-
-              //campo do cpf
-              TextFormField(
-                controller: _cpfController,
-
-                keyboardType: TextInputType.number,
-
-                textInputAction: TextInputAction.next,
-
-                decoration: const InputDecoration(labelText: 'CPF'),
-
-                inputFormatters: [Mask.cpfMaskFormatter],
-
-                validator: (value) => PersonalValidation.cpf(value),
-              ),
-
-              const SizedBox(height: 20),
-
-              //campo de email
-              TextFormField(
-                controller: _emailController,
-
-                decoration: const InputDecoration(labelText: 'Email'),
-
-                validator: (value) => PersonalDataValidation.email(value),
-              ),
-              const SizedBox(height: 30),
-
-              //campo de Senha
-              TextFormField(
-                controller: _passwordController,
-
-                obscureText: true,
-
-                textInputAction: TextInputAction.next,
-
-                autocorrect: false,
-
-                enableSuggestions: false,
-
-                decoration: const InputDecoration(labelText: 'Senha'),
-
-                validator: (value) => PersonalValidation.password(value),
-              ),
-
-              const SizedBox(height: 30),
-
-              //campo de data
-              TextFormField(
-                controller: dateController,
-                readOnly: true,
-
-                decoration: const InputDecoration(
-                  labelText: 'Data de Nascimento',
-                  suffix: Icon(Icons.calendar_today),
+                _label('Nome completo:'),
+                TextFormField(
+                  controller: nameController,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[a-zA-ZÀ-ÿ ]')),
+                  ],
+                  keyboardType: TextInputType.name,
+                  textInputAction: TextInputAction.next,
+                  decoration: _inputDecoration(),
+                  validator: (value) => PersonalDataValidation.name(value),
                 ),
 
-                onTap: () async {
-                  //enquanto o usuario clicar
-                  final DateTime? date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime(2000),
-                    firstDate: DateTime(1900),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) {
-                    setState(() {
-                      selectDate = date; // Salva o DateTime aqui
-                      dateController.text =
-                          '${date.day}/${date.month}/${date.year}';
-                    });
-                  }
-                },
+                const SizedBox(height: 18),
 
-                validator: (value) => PersonalDataValidation.birth(value),
-              ),
+                _label('CPF:'),
+                TextFormField(
+                  controller: _cpfController,
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  decoration: _inputDecoration(),
+                  inputFormatters: [Mask.cpfMaskFormatter],
+                  validator: (value) => PersonalValidation.cpf(value),
+                ),
 
-              ElevatedButton(
-                onPressed: () async {
-                  if (_formKey.currentState!.validate()) {
-                    try {
-                      final authService = RegisterService();
+                const SizedBox(height: 18),
 
-                      await authService.register(
-                        name: nameController.text,
-                        cpf: _cpfController.text,
-                        email: _emailController.text,
-                        password: _passwordController.text,
-                        date: selectDate!,
-                      );
+                _label('Email:'),
+                TextFormField(
+                  controller: _emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  textCapitalization: TextCapitalization.none,
+                  autocorrect: false,
+                  textInputAction: TextInputAction.next,
+                  decoration: _inputDecoration(),
+                  validator: (value) => PersonalDataValidation.email(value),
+                ),
 
-                      if (!context.mounted) return;
+                const SizedBox(height: 18),
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Usuário cadastrado.')),
-                      );
+                _label('Senha:'),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: _obscurePassword,
+                  keyboardType: TextInputType.visiblePassword,
+                  textInputAction: TextInputAction.next,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: _inputDecoration(
+                    prefixIcon: const Icon(Icons.lock_outline, size: 20),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
+                  validator: (value) => PersonalValidation.password(value),
+                ),
 
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginPage(),
-                        ),
-                      );
-                    } catch (e) {
-                      if (!context.mounted) return;
+                const SizedBox(height: 18),
 
-                      ScaffoldMessenger.of(
-                        context,
-                      ).showSnackBar(SnackBar(content: Text(e.toString())));
+                _label('Data de nascimento:'),
+                TextFormField(
+                  controller: dateController,
+                  readOnly: true,
+                  decoration: _inputDecoration(
+                    suffixIcon: const Icon(Icons.calendar_today, size: 20),
+                  ),
+                  onTap: () async {
+                    final DateTime? date = await showDatePicker(
+                      context: context,
+                      initialDate: DateTime(2000),
+                      firstDate: DateTime(1900),
+                      lastDate: DateTime.now(),
+                    );
+
+                    if (date != null) {
+                      setState(() {
+                        selectDate = date;
+                        dateController.text =
+                            '${date.day}/${date.month}/${date.year}';
+                      });
                     }
-                  }
-                },
+                  },
+                  validator: (value) => PersonalDataValidation.birth(value),
+                ),
 
-                child: const Text('Cadastrar'),
-              ),
+                const SizedBox(height: 35),
 
-              TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
+                SizedBox(
+                  width: double.infinity,
+                  height: 45,
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF0D3F87),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          onPressed: () async {
+                            if (!_formKey.currentState!.validate()) return;
 
-                    MaterialPageRoute(builder: (context) => const LoginPage()),
-                  );
-                },
+                            FocusScope.of(context).unfocus();
 
-                child: const Text('Já possui conta? Faça login'),
-              ),
-            ],
+                            setState(() {
+                              _isLoading = true;
+                            });
+
+                            try {
+                              final authService = RegisterService();
+
+                              await authService.register(
+                                name: nameController.text,
+                                cpf: _cpfController.text,
+                                email: _emailController.text,
+                                password: _passwordController.text,
+                                date: selectDate!,
+                              );
+
+                              if (!context.mounted) return;
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Usuário cadastrado.'),
+                                ),
+                              );
+
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const LoginPage(),
+                                ),
+                              );
+                            } catch (e) {
+                              if (!context.mounted) return;
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            } finally {
+                              if (mounted) {
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              }
+                            }
+                          },
+                          child: const Text(
+                            'Cadastrar',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                ),
+
+                TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginPage(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Já possui conta? Faça login',
+                    style: TextStyle(
+                      color: Color(0xFF0D3F87),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                const Text(
+                  'from',
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
+                ),
+
+                const Text(
+                  'EVOLUTEC',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0D3F87),
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _label(String text) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        text,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({Widget? prefixIcon, Widget? suffixIcon}) {
+    return InputDecoration(
+      prefixIcon: prefixIcon,
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: Colors.white,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide(color: Colors.grey.shade500),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: Color(0xFF0D3F87), width: 1.5),
+      ),
+    );
+  }
+
   @override
   void dispose() {
-    super.dispose();
     nameController.dispose();
     _cpfController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     dateController.dispose();
+    super.dispose();
   }
 }
