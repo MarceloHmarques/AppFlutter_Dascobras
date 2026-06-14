@@ -12,7 +12,7 @@ import 'package:DasCobras/app/pages/client/view_client_dialog.dart';
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 import 'cart_dialog.dart';
 import 'package:DasCobras/app/pages/sales/add_product_cart_dialog.dart';
-import 'package:DasCobras/app/pages/widgets/custom_bottom_nav.dart';
+import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
 
 class SalesPage extends StatefulWidget {
   const SalesPage({super.key});

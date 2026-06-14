@@ -40,14 +40,6 @@ class _EditProductDialogState extends State<EditProductDialog> {
     selectedCategory = widget.product.categoryId;
   }
 
-  @override
-  void dispose() {
-    nameController.dispose();
-    priceController.dispose();
-    stockController.dispose();
-    super.dispose();
-  }
-
   Future<void> pickImage() async {
     final picker = ImagePicker();
 
@@ -77,16 +69,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
   }
 
   Future<void> saveProduct() async {
-    print("BOTÃO SALVAR CLICADO");
-
     try {
-      print("ID: ${widget.product.id}");
-      print("Nome: ${nameController.text}");
-      print("Preço: ${priceController.text}");
-      print("Estoque: ${stockController.text}");
-      print("Categoria: $selectedCategory");
-
-      // Faz upload da nova imagem (ou mantém a antiga)
       String imageUrl = await uploadImage();
 
       await context.read<HomeSearchViewmodel>().updateProduct(
@@ -106,11 +89,6 @@ class _EditProductDialogState extends State<EditProductDialog> {
         );
       }
     } catch (e, s) {
-      print("==================");
-      print("ERRO AO SALVAR");
-      print(e);
-      print(s);
-
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -267,5 +245,13 @@ class _EditProductDialogState extends State<EditProductDialog> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    priceController.dispose();
+    stockController.dispose();
+    super.dispose();
   }
 }

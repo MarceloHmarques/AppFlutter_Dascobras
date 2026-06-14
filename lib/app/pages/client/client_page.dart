@@ -7,7 +7,7 @@ import 'package:DasCobras/app/pages/reports/reports_page.dart';
 import 'package:DasCobras/app/pages/client/create_client_dialog.dart';
 import 'package:DasCobras/app/pages/client/edit_client_dialog.dart';
 import 'view_client_dialog.dart';
-import 'package:DasCobras/app/pages/widgets/custom_bottom_nav.dart';
+import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
 
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
 

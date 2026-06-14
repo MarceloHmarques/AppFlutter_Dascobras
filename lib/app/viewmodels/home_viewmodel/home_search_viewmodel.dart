@@ -9,7 +9,11 @@ class HomeSearchViewmodel extends ChangeNotifier {
   List<ProductSearchModel> filteredProducts = [];
   List<String> categories = ['Todos'];
 
-  Future<void> loadProduct() async {
+  bool loading = false;
+
+  Future<void> loadProduct({bool force = false}) async {
+    if (products.isNotEmpty && !force) return;
+
     try {
       final response = await supabase.from('product').select('''
       *,

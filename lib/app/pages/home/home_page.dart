@@ -1,13 +1,15 @@
 import 'package:DasCobras/app/pages/sales/sales_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:DasCobras/app/pages/home/edit_product_dialog.dart';
 import 'package:DasCobras/app/pages/home/add_product_dialog.dart';
 import 'package:DasCobras/app/pages/client/client_page.dart';
 import 'package:DasCobras/app/pages/reports/reports_page.dart';
-import 'package:DasCobras/app/pages/widgets/custom_bottom_nav.dart';
+import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
+import 'package:DasCobras/app/pages/widgets/home/product_car_dialog.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -24,9 +26,11 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<HomeSearchViewmodel>().loadProduct();
+      context.read<HomeSearchViewmodel>().loadProduct(force: true);
     });
   }
+
+  final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   void openCategoryFilter() {
     final vm = context.read<HomeSearchViewmodel>();
@@ -87,11 +91,11 @@ class _HomePageState extends State<HomePage> {
                 hintText: 'Buscar produto...',
                 elevation: const WidgetStatePropertyAll(0),
                 backgroundColor: const WidgetStatePropertyAll(Colors.white),
-                trailing: const [Icon(Icons.search, color: Colors.grey)],
+                trailing: const [Icon(Icons.search, color: Color(0xFF0D3F87))],
                 shape: WidgetStatePropertyAll(
                   RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: BorderSide(color: Colors.grey.shade400),
+                    side: BorderSide(color: Color(0xFF0D3F87)),
                   ),
                 ),
                 onChanged: (value) {
@@ -157,12 +161,13 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: Consumer<HomeSearchViewmodel>(
                 builder: (context, service, _) {
+                  if (service.loading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
                   if (service.filteredProducts.isEmpty) {
                     return const Center(
-                      child: Text(
-                        'Nenhum produto encontrado',
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      child: Text('Nenhum produto encontrado'),
                     );
                   }
 
@@ -184,222 +189,72 @@ class _HomePageState extends State<HomePage> {
                           ? 'Últimas ${product.stock} unidades'
                           : '${product.stock} em estoque';
 
-                      return Container(
-                        margin: const EdgeInsets.only(
-                          bottom: 15,
-                          left: 5,
-                          right: 5,
-                        ),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: const Color(0xFF0D3F87)),
-                          borderRadius: BorderRadius.circular(3),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black26,
-                              blurRadius: 4,
-                              offset: Offset(1, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 70,
-                              height: 70,
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: const Color(0xFF0D3F87),
+                      return ProductCard(
+                        product: product,
+                        onEdit: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) =>
+                                EditProductDialog(product: product),
+                          );
+                        },
+                        onDelete: () async {
+                          final confirmar = await showDialog<bool>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text("Excluir Produto"),
+                                content: Text(
+                                  "Deseja realmente apagar o produto?\n\n${product.name}",
                                 ),
-                              ),
-                              child: Image.network(
-                                product.imageurl,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, __, ___) {
-                                  return const Icon(
-                                    Icons.image_not_supported_outlined,
-                                  );
-                                },
-                              ),
-                            ),
-
-                            const SizedBox(width: 10),
-
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    product.name,
-                                    style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF000000),
-                                    ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.pop(context, false);
+                                    },
+                                    child: const Text("Não"),
                                   ),
-
-                                  Text(
-                                    product.category,
-                                    style: const TextStyle(
-                                      color: Color(0xFF0D3F87),
-                                      fontWeight: FontWeight.w600,
+                                  ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.red,
                                     ),
-                                  ),
-
-                                  Text(
-                                    'R\$ ${product.price.toStringAsFixed(2)}',
-                                    style: const TextStyle(
-                                      color: Color(0xFF28A745),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
-
-                                  const SizedBox(height: 5),
-
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: stockColor,
-                                      borderRadius: BorderRadius.circular(5),
-                                    ),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Icon(
-                                          Icons.inventory_2_outlined,
-                                          size: 14,
-                                          color: Colors.white,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          stockText,
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
+                                    onPressed: () {
+                                      Navigator.pop(context, true);
+                                    },
+                                    child: const Text(
+                                      "Sim",
+                                      style: TextStyle(color: Colors.white),
                                     ),
                                   ),
                                 ],
-                              ),
-                            ),
+                              );
+                            },
+                          );
 
-                            Column(
-                              children: [
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFF9800),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: IconButton(
-                                    onPressed: () {
-                                      showDialog(
-                                        context: context,
-                                        builder: (context) =>
-                                            EditProductDialog(product: product),
-                                      );
-                                    },
-                                    icon: const Icon(
-                                      Icons.edit_outlined,
-                                      color: Colors.white,
+                          if (confirmar == true) {
+                            try {
+                              await context
+                                  .read<HomeSearchViewmodel>()
+                                  .deleteProduct(product.id);
+
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      "Produto removido com sucesso!",
                                     ),
                                   ),
-                                ),
-
-                                const SizedBox(height: 8),
-
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF44336),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: IconButton(
-                                    onPressed: () async {
-                                      final confirmar = await showDialog<bool>(
-                                        context: context,
-                                        builder: (context) {
-                                          return AlertDialog(
-                                            title: const Text(
-                                              "Excluir Produto",
-                                            ),
-                                            content: Text(
-                                              "Deseja realmente apagar o produto?\n\n${product.name}",
-                                            ),
-                                            actions: [
-                                              TextButton(
-                                                onPressed: () {
-                                                  Navigator.pop(context, false);
-                                                },
-                                                child: const Text("Não"),
-                                              ),
-                                              ElevatedButton(
-                                                style: ElevatedButton.styleFrom(
-                                                  backgroundColor: Colors.red,
-                                                ),
-                                                onPressed: () {
-                                                  Navigator.pop(context, true);
-                                                },
-                                                child: const Text(
-                                                  "Sim",
-                                                  style: TextStyle(
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      );
-
-                                      if (confirmar == true) {
-                                        try {
-                                          await context
-                                              .read<HomeSearchViewmodel>()
-                                              .deleteProduct(product.id);
-
-                                          if (mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              const SnackBar(
-                                                content: Text(
-                                                  "Produto removido com sucesso!",
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        } catch (e) {
-                                          if (mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  "Erro ao apagar: $e",
-                                                ),
-                                              ),
-                                            );
-                                          }
-                                        }
-                                      }
-                                    },
-                                    icon: const Icon(
-                                      Icons.delete_outline,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Erro ao apagar: $e")),
+                                );
+                              }
+                            }
+                          }
+                        },
                       );
                     },
                   );
