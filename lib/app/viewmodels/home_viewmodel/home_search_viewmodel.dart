@@ -15,13 +15,16 @@ class HomeSearchViewmodel extends ChangeNotifier {
     if (products.isNotEmpty && !force) return;
 
     try {
-      final response = await supabase.from('product').select('''
+      final response = await supabase
+    .from('product')
+    .select('''
       *,
       category:category_id (
         id,
         name
       )
-    ''');
+    ''')
+    .eq('is_active', true);
 
       print(response);
 
@@ -105,9 +108,9 @@ class HomeSearchViewmodel extends ChangeNotifier {
   }
 
   Future<void> deleteProduct(int id) async {
-    await supabase.from('product').delete().eq('id', id);
+    await supabase.from('product').update({'is_active': false}).eq('id', id);
 
-    await loadProduct();
+    await loadProduct(force: true);
   }
 
   Future<void> addProduct({

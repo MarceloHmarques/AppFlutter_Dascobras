@@ -1,3 +1,4 @@
+import 'package:DasCobras/app/viewmodels/sale_viewmodel/sale_history_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -31,6 +32,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SaleViewModel()),
 
         ChangeNotifierProvider(create: (_) => ReportsViewModel()),
+
+        ChangeNotifierProvider(create: (_) => SaleHistoryViewModel()),
       ],
       child: const MyApp(),
     ),

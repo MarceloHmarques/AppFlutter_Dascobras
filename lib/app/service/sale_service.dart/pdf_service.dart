@@ -251,4 +251,214 @@ class PdfService {
 
     return file;
   }
+
+  static Future<File> generateHistoryPdf({
+    required Map<String, dynamic> sale,
+    required List<Map<String, dynamic>> items,
+  }) async {
+    final pdf = pw.Document();
+
+    final logo = await imageFromAssetBundle('lib/app/assets/img/LogoLonga.png');
+
+    pdf.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        build: (context) {
+          return [
+            pw.Center(child: pw.Image(logo, width: 180)),
+
+            pw.SizedBox(height: 20),
+
+            pw.Center(
+              child: pw.Text(
+                "COMPROVANTE DE VENDA",
+                style: pw.TextStyle(
+                  fontSize: 22,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+
+            pw.SizedBox(height: 20),
+
+            pw.Divider(),
+
+            pw.Table(
+              border: pw.TableBorder.all(),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(
+                        "Nome:\n${sale['customer']?['name'] ?? ''}",
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(
+                        "CPF/CNPJ:\n${sale['customer']?['cpforcnpj'] ?? ''}",
+                      ),
+                    ),
+                  ],
+                ),
+
+                pw.TableRow(
+                  children: [
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(
+                        "Cidade:\n${sale['customer']?['city'] ?? ''}",
+                      ),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.all(5),
+                      child: pw.Text(
+                        "Estado:\n${sale['customer']?['state_'] ?? ''}",
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            pw.SizedBox(height: 10),
+
+            pw.Text("Data da Compra: ${sale['sale_date'] ?? ''}"),
+
+            pw.SizedBox(height: 5),
+
+            pw.Text("Pedido: ${sale['id']}"),
+
+            pw.SizedBox(height: 20),
+
+            pw.Divider(),
+
+            pw.Row(
+              children: [
+                pw.Expanded(
+                  flex: 4,
+                  child: pw.Text(
+                    "Produto",
+                    style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                  ),
+                ),
+
+                pw.Expanded(
+                  child: pw.Center(
+                    child: pw.Text(
+                      "Qtd",
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                  ),
+                ),
+
+                pw.Expanded(
+                  child: pw.Align(
+                    alignment: pw.Alignment.centerRight,
+                    child: pw.Text(
+                      "Unit.",
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                  ),
+                ),
+
+                pw.Expanded(
+                  child: pw.Align(
+                    alignment: pw.Alignment.centerRight,
+                    child: pw.Text(
+                      "Total",
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            pw.Divider(),
+
+            ...items.map(
+              (item) => pw.Container(
+                margin: const pw.EdgeInsets.only(bottom: 8),
+                child: pw.Row(
+                  children: [
+                    pw.Expanded(
+                      flex: 4,
+                      child: pw.Text(item['product']?['name'] ?? 'Produto'),
+                    ),
+
+                    pw.Expanded(
+                      child: pw.Center(child: pw.Text("${item['quantity']}")),
+                    ),
+
+                    pw.Expanded(
+                      child: pw.Align(
+                        alignment: pw.Alignment.centerRight,
+                        child: pw.Text(
+                          "R\$ ${(item['unit_price'] ?? 0).toString()}",
+                        ),
+                      ),
+                    ),
+
+                    pw.Expanded(
+                      child: pw.Align(
+                        alignment: pw.Alignment.centerRight,
+                        child: pw.Text(
+                          "R\$ ${(item['subtotal'] ?? 0).toString()}",
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            pw.Divider(),
+
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                "TOTAL: R\$ ${sale['total']}",
+                style: pw.TextStyle(
+                  fontSize: 22,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+
+            pw.SizedBox(height: 40),
+
+            pw.Center(
+              child: pw.Text(
+                "Obrigado pela preferência!",
+                style: pw.TextStyle(
+                  fontSize: 16,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+
+            pw.SizedBox(height: 10),
+
+            pw.Center(
+              child: pw.Text(
+                "Das Cobras © 2026",
+                style: const pw.TextStyle(fontSize: 12),
+              ),
+            ),
+          ];
+        },
+      ),
+    );
+
+    final bytes = await pdf.save();
+
+    final directory = await getApplicationDocumentsDirectory();
+
+    final file = File("${directory.path}/Venda_${sale['id']}.pdf");
+
+    await file.writeAsBytes(bytes);
+
+    return file;
+  }
 }

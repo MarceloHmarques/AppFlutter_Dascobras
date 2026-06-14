@@ -12,8 +12,10 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> loadCustomers() async {
     try {
-      final response = await supabase.from('customer').select();
-
+      final response = await supabase
+          .from('customer')
+          .select()
+          .eq('is_active', true);
       customers = response
           .map<CustomerModel>((e) => CustomerModel.fromMap(e))
           .toList();
@@ -84,13 +86,13 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> deleteCustomer(int id) async {
     try {
-      await supabase.from('customer').delete().eq('id', id);
+      await supabase.from('customer').update({'is_active': false}).eq('id', id);
 
       await loadCustomers();
 
-      print('CLIENTE REMOVIDO COM SUCESSO');
+      print('CLIENTE DESATIVADO COM SUCESSO');
     } catch (e) {
-      print('ERRO AO REMOVER CLIENTE');
+      print('ERRO AO DESATIVAR CLIENTE');
       print(e);
       rethrow;
     }

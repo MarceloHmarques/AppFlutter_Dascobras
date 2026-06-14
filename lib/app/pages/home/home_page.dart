@@ -112,29 +112,6 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: openCategoryFilter,
-                    child: Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(
-                          color: const Color(0xFF0D3F87),
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(7),
-                      ),
-                      child: const Icon(
-                        Icons.filter_alt_outlined,
-                        color: Color(0xFF0D3F87),
-                        size: 22,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(width: 14),
-
                   Container(
                     height: 42,
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -149,6 +126,29 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.white,
                         fontSize: 15,
                         fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  GestureDetector(
+                    onTap: openCategoryFilter,
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFF0D3F87),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(7),
+                      ),
+                      child: const Icon(
+                        Icons.filter_alt_outlined,
+                        color: Color(0xFF0D3F87),
+                        size: 22,
                       ),
                     ),
                   ),
@@ -205,7 +205,7 @@ class _HomePageState extends State<HomePage> {
                               return AlertDialog(
                                 title: const Text("Excluir Produto"),
                                 content: Text(
-                                  "Deseja realmente apagar o produto?\n\n${product.name}",
+                                  "Este produto deixará de aparecer nas vendas e no estoque. Deseja continuar?\n\n${product.name}",
                                 ),
                                 actions: [
                                   TextButton(

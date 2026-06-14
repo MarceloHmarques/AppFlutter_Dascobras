@@ -13,6 +13,7 @@ import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 import 'cart_dialog.dart';
 import 'package:DasCobras/app/pages/sales/add_product_cart_dialog.dart';
 import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
+import 'sales_history_page.dart';
 
 class SalesPage extends StatefulWidget {
   const SalesPage({super.key});
@@ -27,15 +28,6 @@ class _SalesPageState extends State<SalesPage> {
   final TextEditingController clientSearchController = TextEditingController();
   String selectedCategory = 'Todos';
 
-  final List<String> categories = [
-    'Todos',
-    'Bebida',
-    'Massas',
-    'Ração',
-    'Refrigerante',
-    'Grãos',
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -47,15 +39,17 @@ class _SalesPageState extends State<SalesPage> {
   }
 
   void openCategoryFilter() {
+    final vm = context.read<HomeSearchViewmodel>();
+
     showModalBottomSheet(
       context: context,
       builder: (context) {
         return SafeArea(
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: categories.length,
+            itemCount: vm.categories.length,
             itemBuilder: (context, index) {
-              final category = categories[index];
+              final category = vm.categories[index];
 
               return ListTile(
                 title: Text(category),
@@ -67,9 +61,7 @@ class _SalesPageState extends State<SalesPage> {
                     selectedCategory = category;
                   });
 
-                  context.read<HomeSearchViewmodel>().filterByCategory(
-                    category,
-                  );
+                  vm.filterByCategory(category);
 
                   Navigator.pop(context);
                 },
@@ -320,19 +312,19 @@ class _SalesPageState extends State<SalesPage> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
+                    height: 42,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(
                       color: const Color(0xFF0D3F87),
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(7),
                     ),
+                    alignment: Alignment.center,
                     child: Text(
                       selectedCategory,
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -342,14 +334,20 @@ class _SalesPageState extends State<SalesPage> {
                   GestureDetector(
                     onTap: openCategoryFilter,
                     child: Container(
-                      padding: const EdgeInsets.all(5),
+                      width: 42,
+                      height: 42,
                       decoration: BoxDecoration(
-                        border: Border.all(color: const Color(0xFF0D3F87)),
-                        borderRadius: BorderRadius.circular(5),
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFF0D3F87),
+                          width: 1,
+                        ),
+                        borderRadius: BorderRadius.circular(7),
                       ),
                       child: const Icon(
                         Icons.filter_alt_outlined,
                         color: Color(0xFF0D3F87),
+                        size: 22,
                       ),
                     ),
                   ),
@@ -517,24 +515,45 @@ class _SalesPageState extends State<SalesPage> {
 
       floatingActionButton: Consumer<SaleViewModel>(
         builder: (context, saleVm, _) {
-          return Badge(
-            label: Text("${saleVm.cart.length}"),
-            child: FloatingActionButton(
-              backgroundColor: const Color(0xFF0D3F87),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartPage()),
-                );
-              },
-              child: const Icon(
-                Icons.shopping_cart_outlined,
-                color: Colors.white,
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton(
+                heroTag: "history",
+                backgroundColor: Color(0xFF0D3F87),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SalesHistoryPage()),
+                  );
+                },
+                child: const Icon(Icons.history, color: Colors.white),
               ),
-            ),
+
+              const SizedBox(height: 10),
+
+              Badge(
+                label: Text("${saleVm.cart.length}"),
+                child: FloatingActionButton(
+                  heroTag: "cart",
+                  backgroundColor: const Color(0xFF0D3F87),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const CartPage()),
+                    );
+                  },
+                  child: const Icon(
+                    Icons.shopping_cart_outlined,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
+
       bottomNavigationBar: CustomBottomNav(
         currentIndex: 2, // Tela de Venda
         onTap: (index) {
