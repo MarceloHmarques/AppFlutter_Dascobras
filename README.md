@@ -249,17 +249,6 @@ https://www.figma.com/design/Fqm6snmQq3kKHZqKHD32Up/Sem-t%C3%ADtulo?node-id=0-1&
 
 ---
 
-## 👥 Equipe de Desenvolvimento
-
-| Foto | Integrante | GitHub |
-|------|------------|---------|
-| <img src="https://github.com/MarceloHmarques.png" width="100"> | Marcelo Henrique de Lima Marques | [@MarceloHmarques](https://github.com/MarceloHmarques) |
-| <img src="https://github.com/alissonricarte.png" width="100"> | Alisson Lima Ricarte | [@alissonricarte](https://github.com/alissonricarte) |
-| <img src="https://github.com/DaviFreita.png" width="100"> | Davi da Silva Freitas | [@DaviFreita](https://github.com/DaviFreita) |
-| <img src="https://github.com/Juanpablouf.png" width="100"> | Juan Pablo Silva Valdivino | [@Juanpablouf](https://github.com/Juanpablouf) |
-
----
-
 ## 📌 Status Atual do Desenvolvimento
 
 🚧 Em desenvolvimento
@@ -268,12 +257,40 @@ O sistema encontra-se em desenvolvimento e aprimoramento contínuo pela equipe d
 
 ---
 
-## 🏛 Instituição
+<h2 id="colab" align="center">👥 Colaboradores</h2>
 
-**Universidade Federal Rural do Semi-Árido (UFERSA)**
+<div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <a href="https://github.com/MarceloHmarques">
+          <img src="https://github.com/MarceloHmarques.png" width="100px;" alt="Marcelo Henrique"/><br>
+          <sub><b>Marcelo Henrique de Lima Marques</b></sub>
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://github.com/alissonricarte">
+          <img src="https://github.com/alissonricarte.png" width="100px;" alt="Alisson Ricarte"/><br>
+          <sub><b>Alisson Lima Ricarte</b></sub>
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://github.com/DaviFreita">
+          <img src="https://github.com/DaviFreita.png" width="100px;" alt="Davi Freitas"/><br>
+          <sub><b>Davi da Silva Freitas</b></sub>
+        </a>
+      </td>
+      <td align="center">
+        <a href="https://github.com/Juanpablouf">
+          <img src="https://github.com/Juanpablouf.png" width="100px;" alt="Juan Pablo"/><br>
+          <sub><b>Juan Pablo Silva Valdivino</b></sub>
+        </a>
+      </td>
+    </tr>
+  </table>
 
-**Curso:** Interdisciplinar em Tecnologia da Informação
-
-**Disciplina:** Engenharia de Software
+  <br>
+</div>
+<img width=100% src="https://capsule-render.vercel.app/api?type=waving&height=110&color=F9F9F4&section=footer&reversal=false"/>
 
 ---
