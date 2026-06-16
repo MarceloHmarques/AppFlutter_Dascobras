@@ -4,7 +4,7 @@ class ProductValidation {
 
     if ((value.trim().isEmpty) ||
         (value.length < 3) ||
-        (!RegExp(r'^[0-9A-Za-zÀ-ÿ-.\s]+$').hasMatch(value))) {
+        (!RegExp(r'^[0-9A-Za-zÀ-ÿ\s().-]+$').hasMatch(value))) {
       return 'Nome inválido';
     }
     return null;

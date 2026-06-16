@@ -6,7 +6,7 @@ class AddressValidation {
 
     if ((value.trim().length < 3) ||
         (value.trim().length > 90) ||
-        (!charRegex.hasMatch(value)))
+        (!RegExp(r'^[0-9A-Za-zÀ-ÿ().\-\s]+$').hasMatch(value)))
       return 'Rua inválida';
 
     return null;
