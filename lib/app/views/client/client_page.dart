@@ -1,16 +1,16 @@
-import 'package:DasCobras/app/pages/sales/sales_page.dart';
-import 'package:DasCobras/app/pages/widgets/shared/logo_header.dart';
+import 'package:DasCobras/app/views/sales/sales_page.dart';
+import 'package:DasCobras/app/views/widgets/shared/logo_header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:DasCobras/app/pages/home/home_page.dart';
-import 'package:DasCobras/app/pages/reports/reports_page.dart';
-import 'package:DasCobras/app/pages/client/create_client_dialog.dart';
-import 'package:DasCobras/app/pages/client/edit_client_dialog.dart';
+import 'package:DasCobras/app/views/home/home_page.dart';
+import 'package:DasCobras/app/views/reports/reports_page.dart';
+import 'package:DasCobras/app/views/client/create_client_dialog.dart';
+import 'package:DasCobras/app/views/client/edit_client_dialog.dart';
 import 'view_client_dialog.dart';
-import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
-import 'package:DasCobras/app/pages/widgets/shared/client_search_bar.dart';
-import 'package:DasCobras/app/pages/widgets/client/client_card.dart';
+import 'package:DasCobras/app/views/widgets/home/custom_bottom_nav.dart';
+import 'package:DasCobras/app/views/widgets/shared/client_search_bar.dart';
+import 'package:DasCobras/app/views/widgets/client/client_card.dart';
 
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
 

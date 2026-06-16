@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:DasCobras/app/model/product_search_model.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_image.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_image.dart';
 
 class SalesProductCard extends StatelessWidget {
   final ProductSearchModel product;

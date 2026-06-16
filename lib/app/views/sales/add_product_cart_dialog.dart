@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_image.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_image.dart';
 import '../../model/product_search_model.dart';
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 

@@ -5,7 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:DasCobras/app/pages/initial_splash/initial_splash_page.dart';
+import 'package:DasCobras/app/views/initial_splash/initial_splash_page.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/reports_viewmodel/reports_viewmodel.dart';

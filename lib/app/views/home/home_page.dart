@@ -1,18 +1,18 @@
-import 'package:DasCobras/app/pages/sales/sales_page.dart';
+import 'package:DasCobras/app/views/sales/sales_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
-import 'package:DasCobras/app/pages/home/add_product_dialog.dart';
-import 'package:DasCobras/app/pages/client/client_page.dart';
-import 'package:DasCobras/app/pages/reports/reports_page.dart';
-import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_card.dart';
-import 'package:DasCobras/app/pages/widgets/shared/logo_header.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_search_bar.dart';
-import 'package:DasCobras/app/pages/widgets/shared/category_filter.dart';
-import 'package:DasCobras/app/pages/widgets/home/product_home_actions.dart';
+import 'package:DasCobras/app/views/home/add_product_dialog.dart';
+import 'package:DasCobras/app/views/client/client_page.dart';
+import 'package:DasCobras/app/views/reports/reports_page.dart';
+import 'package:DasCobras/app/views/widgets/home/custom_bottom_nav.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_card.dart';
+import 'package:DasCobras/app/views/widgets/shared/logo_header.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_search_bar.dart';
+import 'package:DasCobras/app/views/widgets/shared/category_filter.dart';
+import 'package:DasCobras/app/views/widgets/home/product_home_actions.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

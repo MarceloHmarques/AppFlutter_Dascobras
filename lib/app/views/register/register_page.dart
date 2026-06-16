@@ -4,7 +4,7 @@ import 'package:DasCobras/app/service/validation_service/personal%20_data_valida
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:DasCobras/app/viewmodels/register_viewmodel/register_viewmodel.dart';
-import 'package:DasCobras/app/pages/login/login_page.dart';
+import 'package:DasCobras/app/views/login/login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

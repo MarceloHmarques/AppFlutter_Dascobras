@@ -1,26 +1,26 @@
-import 'package:DasCobras/app/pages/widgets/shared/logo_header.dart';
+import 'package:DasCobras/app/views/widgets/shared/logo_header.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'sales_history_page.dart';
 
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
-import 'package:DasCobras/app/pages/home/home_page.dart';
-import 'package:DasCobras/app/pages/reports/reports_page.dart';
+import 'package:DasCobras/app/views/home/home_page.dart';
+import 'package:DasCobras/app/views/reports/reports_page.dart';
 import '../../model/customer_model.dart';
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
-import 'package:DasCobras/app/pages/client/client_page.dart';
-import 'package:DasCobras/app/pages/client/view_client_dialog.dart';
+import 'package:DasCobras/app/views/client/client_page.dart';
+import 'package:DasCobras/app/views/client/view_client_dialog.dart';
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 import 'cart_dialog.dart';
-import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
-import 'package:DasCobras/app/pages/widgets/sales/selected_client_card.dart';
-import 'package:DasCobras/app/pages/widgets/shared/client_search_bar.dart';
-import 'package:DasCobras/app/pages/widgets/sales/customer_search_results.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_search_bar.dart';
-import 'package:DasCobras/app/pages/widgets/shared/category_filter.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_card.dart';
-import 'package:DasCobras/app/pages/widgets/sales/product_sale_actions.dart';
-import 'package:DasCobras/app//pages/widgets/sales/sales_floating_buttons.dart';
+import 'package:DasCobras/app/views/widgets/home/custom_bottom_nav.dart';
+import 'package:DasCobras/app/views/widgets/sales/selected_client_card.dart';
+import 'package:DasCobras/app/views/widgets/shared/client_search_bar.dart';
+import 'package:DasCobras/app/views/widgets/sales/customer_search_results.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_search_bar.dart';
+import 'package:DasCobras/app/views/widgets/shared/category_filter.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_card.dart';
+import 'package:DasCobras/app/views/widgets/sales/product_sale_actions.dart';
+import 'package:DasCobras/app/views/widgets/sales/sales_floating_buttons.dart';
 
 class SalesPage extends StatefulWidget {
   const SalesPage({super.key});

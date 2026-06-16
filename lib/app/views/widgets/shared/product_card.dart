@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:DasCobras/app/pages/widgets/shared/product_image.dart';
+import 'package:DasCobras/app/views/widgets/shared/product_image.dart';
 import 'package:intl/intl.dart';
 
 class ProductCard extends StatelessWidget {

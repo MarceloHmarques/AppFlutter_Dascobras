@@ -1,5 +1,5 @@
-import 'package:DasCobras/app/pages/home/home_page.dart';
-import 'package:DasCobras/app/pages/login/login_page.dart';
+import 'package:DasCobras/app/views/home/home_page.dart';
+import 'package:DasCobras/app/views/login/login_page.dart';
 import 'package:DasCobras/app/viewmodels/splash_viewmodel/splash_viewmodel.dart';
 import 'package:flutter/material.dart';
 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import 'package:DasCobras/app/pages/home/edit_product_dialog.dart';
-import 'package:DasCobras/app/pages/widgets/home/product_action_button.dart';
+import 'package:DasCobras/app/views/home/edit_product_dialog.dart';
+import 'package:DasCobras/app/views/widgets/home/product_action_button.dart';
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 
 class ProductHomeActions extends StatelessWidget {

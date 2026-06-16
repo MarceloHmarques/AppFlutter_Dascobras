@@ -1,44 +1,57 @@
 import 'dart:io';
-import 'package:provider/provider.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:DasCobras/app/views/widgets/home/product_image_picker.dart';
+import 'package:DasCobras/app/service/product_image_service.dart';
+import 'package:DasCobras/app/service/validation_service/mask.dart';
+import 'package:DasCobras/app/service/validation_service/product_validation.dart';
+import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:DasCobras/app/service/validation_service/product_validation.dart';
-import 'package:DasCobras/app/service/validation_service/mask.dart';
-import 'package:DasCobras/app/pages/widgets/home/product_image_picker.dart';
-import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
-import 'package:DasCobras/app/service/product_image_service.dart';
+class EditProductDialog extends StatefulWidget {
+  final dynamic product;
 
-class AddProductDialog extends StatefulWidget {
-  const AddProductDialog({super.key});
+  const EditProductDialog({super.key, required this.product});
 
   @override
-  State<AddProductDialog> createState() => _AddProductDialogState();
+  State<EditProductDialog> createState() => _EditProductDialogState();
 }
 
-class _AddProductDialogState extends State<AddProductDialog> {
+class _EditProductDialogState extends State<EditProductDialog> {
   final _formKey = GlobalKey<FormState>();
 
-  final nameController = TextEditingController();
-  final priceController = TextEditingController();
-  final stockController = TextEditingController();
+  late TextEditingController nameController;
+  late TextEditingController priceController;
+  late TextEditingController stockController;
 
   final supabase = Supabase.instance.client;
   final ProductImageService imageService = ProductImageService();
 
-  String? imageError;
-  String? categoryError;
+  List<Map<String, dynamic>> categories = [];
 
   int? selectedCategory;
   File? selectedImage;
+  String? imageError;
   bool loading = false;
-
-  List<Map<String, dynamic>> categories = [];
 
   @override
   void initState() {
     super.initState();
+
+    nameController = TextEditingController(text: widget.product.name);
+
+    priceController = TextEditingController(
+      text: widget.product.price.toStringAsFixed(2).replaceAll('.', ','),
+    );
+
+    stockController = TextEditingController(
+      text: widget.product.stock.toString(),
+    );
+
+    selectedCategory = widget.product.categoryId;
+
     loadCategories();
   }
 
@@ -69,37 +82,21 @@ class _AddProductDialogState extends State<AddProductDialog> {
     }
   }
 
-  Future<String> uploadImage() async {
-    if (selectedImage == null) {
-      throw Exception('Imagem obrigatória.');
-    }
-
-    return imageService.uploadImage(selectedImage!);
-  }
-
   Future<void> saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
-
-    if (selectedCategory == null) {
-      setState(() {
-        categoryError = 'Categoria obrigatória';
-      });
-      return;
-    }
-
-    if (selectedImage == null) {
-      setState(() {
-        imageError = 'Adicione uma imagem do produto.';
-      });
-      return;
-    }
 
     try {
       setState(() => loading = true);
 
-      final imageUrl = await uploadImage();
+      String imageUrl = widget.product.imageurl;
 
-      await context.read<HomeSearchViewmodel>().addProduct(
+      if (selectedImage != null) {
+        await imageService.deleteImageByUrl(widget.product.imageurl);
+        imageUrl = await imageService.uploadImage(selectedImage!);
+      }
+
+      await context.read<HomeSearchViewmodel>().updateProduct(
+        id: widget.product.id,
         name: nameController.text.trim(),
         imageurl: imageUrl,
         price: double.parse(
@@ -114,7 +111,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Produto cadastrado com sucesso!")),
+        const SnackBar(content: Text("Produto atualizado com sucesso!")),
       );
     } catch (e) {
       if (!mounted) return;
@@ -142,7 +139,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF0D3F87), width: 1),
+          border: Border.all(color: const Color(0xFF0D3F87), width: 2),
         ),
         child: SingleChildScrollView(
           child: Form(
@@ -151,18 +148,19 @@ class _AddProductDialogState extends State<AddProductDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Adicionar Produto',
+                  'Editar Produto',
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 28,
                     color: Color(0xFF0D3F87),
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
 
-                const SizedBox(height: 25),
+                const SizedBox(height: 20),
 
                 ProductImagePicker(
                   selectedImage: selectedImage,
+                  imageUrl: widget.product.imageurl,
                   errorMessage: imageError,
                   onTap: pickImage,
                 ),
@@ -212,24 +210,11 @@ class _AddProductDialogState extends State<AddProductDialog> {
                       onSelected: (value) {
                         setState(() {
                           selectedCategory = value;
-                          categoryError = null;
                         });
                       },
                     );
                   },
                 ),
-
-                if (categoryError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 5),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        categoryError!,
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-                  ),
 
                 const SizedBox(height: 15),
 
@@ -251,7 +236,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
                       ),
                     ),
 
-                    const SizedBox(width: 15),
+                    const SizedBox(width: 10),
 
                     Expanded(
                       child: TextFormField(

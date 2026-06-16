@@ -1,10 +1,10 @@
-import 'package:DasCobras/app/pages/client/client_page.dart';
-import 'package:DasCobras/app/pages/home/home_page.dart';
-import 'package:DasCobras/app/pages/sales/sales_page.dart';
+import 'package:DasCobras/app/views/client/client_page.dart';
+import 'package:DasCobras/app/views/home/home_page.dart';
+import 'package:DasCobras/app/views/sales/sales_page.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:DasCobras/app/pages/widgets/home/custom_bottom_nav.dart';
+import 'package:DasCobras/app/views/widgets/home/custom_bottom_nav.dart';
 
 import '../../viewmodels/reports_viewmodel/reports_viewmodel.dart';
 
