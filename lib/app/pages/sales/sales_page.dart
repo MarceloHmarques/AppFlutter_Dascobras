@@ -243,11 +243,15 @@ class _SalesPageState extends State<SalesPage> {
                 MaterialPageRoute(builder: (_) => const SalesHistoryPage()),
               );
             },
-            onCart: () {
-              Navigator.push(
+            onCart: () async {
+              await Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const CartPage()),
               );
+
+              if (mounted) {
+                await context.read<HomeSearchViewmodel>().refreshProducts();
+              }
             },
           );
         },

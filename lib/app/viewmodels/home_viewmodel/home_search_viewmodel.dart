@@ -60,15 +60,13 @@ class HomeSearchViewmodel extends ChangeNotifier {
       final response = await supabase
           .from('product')
           .select('''
-      *,
-      category:category_id (
-        id,
-        name
-      )
-    ''')
+          *,
+          category:category_id (
+            id,
+            name
+          )
+        ''')
           .eq('is_active', true);
-
-      print(response);
 
       products = response.map((e) => ProductSearchModel.fromMap(e)).toList();
 
@@ -82,7 +80,7 @@ class HomeSearchViewmodel extends ChangeNotifier {
             .toList(),
       ];
 
-      filteredProducts = List.from(products);
+      applyFilters(); // mantém filtros e atualiza lista
 
       notifyListeners();
     } catch (e) {
@@ -126,7 +124,7 @@ class HomeSearchViewmodel extends ChangeNotifier {
           })
           .eq('id', id);
 
-      await loadProduct();
+      await loadProduct(force: true);
     } catch (e) {
       print(e);
       rethrow;
@@ -154,11 +152,14 @@ class HomeSearchViewmodel extends ChangeNotifier {
       'category_id': categoryId,
     });
 
-    await loadProduct();
+    await loadProduct(force: true);
   }
 
   Future<void> refreshProducts() async {
-    await loadProduct();
+    products.clear();
+    filteredProducts.clear();
+
+    await loadProduct(force: true);
   }
 
   Future<void> loadCategories() async {

@@ -7,6 +7,8 @@ class SaleHistoryViewModel extends ChangeNotifier {
   List<Map<String, dynamic>> sales = [];
   List<Map<String, dynamic>> filteredSales = [];
 
+  String _searchText = '';
+
   Future<void> loadSales() async {
     try {
       final response = await supabase
@@ -14,12 +16,12 @@ class SaleHistoryViewModel extends ChangeNotifier {
           .select('''
             *,
             customer (
-                id,
-                name,
-                cpforcnpj,
-                city,
-                state_
-              )
+              id,
+              name,
+              cpforcnpj,
+              city,
+              state_
+            )
           ''')
           .order('id', ascending: false);
 
@@ -28,18 +30,93 @@ class SaleHistoryViewModel extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
     }
   }
 
   void searchCustomer(String value) {
-    if (value.trim().isEmpty) {
+    _searchText = value;
+    _applyFilters();
+  }
+
+  void filterToday() {
+    final today = DateTime.now();
+
+    print("Hoje: $today");
+
+    filteredSales = sales.where((sale) {
+      final date = DateTime.parse(sale['sale_date']);
+
+      print("Venda ${sale['id']}: $date");
+
+      return date.year == today.year &&
+          date.month == today.month &&
+          date.day == today.day;
+    }).toList();
+
+    print("Encontradas: ${filteredSales.length}");
+
+    notifyListeners();
+  }
+
+  void filterLast7Days() {
+    final start = DateTime.now().subtract(const Duration(days: 7));
+
+    filteredSales = sales.where((sale) {
+      final date = DateTime.parse(sale['sale_date']);
+      return date.isAfter(start);
+    }).toList();
+
+    notifyListeners();
+  }
+
+  void filterLast30Days() {
+    final start = DateTime.now().subtract(const Duration(days: 30));
+
+    filteredSales = sales.where((sale) {
+      final date = DateTime.parse(sale['sale_date']);
+      return date.isAfter(start);
+    }).toList();
+
+    notifyListeners();
+  }
+
+  void filterByDate(DateTime? start, DateTime? end) {
+    filteredSales = sales.where((sale) {
+      final date = DateTime.parse(sale['sale_date']);
+
+      if (start != null && date.isBefore(start)) {
+        return false;
+      }
+
+      if (end != null && date.isAfter(end.add(const Duration(days: 1)))) {
+        return false;
+      }
+
+      return true;
+    }).toList();
+
+    notifyListeners();
+  }
+
+  void clearFilters() {
+    filteredSales = List.from(sales);
+
+    if (_searchText.isNotEmpty) {
+      searchCustomer(_searchText);
+    } else {
+      notifyListeners();
+    }
+  }
+
+  void _applyFilters() {
+    if (_searchText.trim().isEmpty) {
       filteredSales = List.from(sales);
     } else {
       filteredSales = sales.where((sale) {
         final customer = sale['customer']['name'].toString().toLowerCase();
 
-        return customer.contains(value.toLowerCase());
+        return customer.contains(_searchText.toLowerCase());
       }).toList();
     }
 
