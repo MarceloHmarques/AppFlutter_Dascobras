@@ -23,6 +23,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
   final nameController = TextEditingController();
   final priceController = TextEditingController();
   final stockController = TextEditingController();
+  final brandController = TextEditingController(); 
 
   final supabase = Supabase.instance.client;
   final ProductImageService imageService = ProductImageService();
@@ -33,6 +34,9 @@ class _AddProductDialogState extends State<AddProductDialog> {
   int? selectedCategory;
   File? selectedImage;
   bool loading = false;
+
+  String selectedUnitType = 'UN'; 
+  final List<String> unitOptions = ['UN', 'Fardo', 'Caixa', 'Saco', 'Kg'];
 
   List<Map<String, dynamic>> categories = [];
 
@@ -107,6 +111,8 @@ class _AddProductDialogState extends State<AddProductDialog> {
         ),
         stock: int.parse(stockController.text),
         categoryId: selectedCategory!,
+        brand: brandController.text.trim().isEmpty ? 'Sem Marca' : brandController.text.trim(), // 👈 Adicionado
+        unitType: selectedUnitType, // 👈 Adicionado
       );
 
       if (!mounted) return;
@@ -267,6 +273,38 @@ class _AddProductDialogState extends State<AddProductDialog> {
                   ],
                 ),
 
+                const SizedBox(height: 15),
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: brandController,
+                        decoration: _inputDecoration(label: 'Marca:'),
+                      ),
+                    ),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedUnitType,
+                        decoration: _inputDecoration(label: 'Opção Unidade:'),
+                        dropdownColor: Colors.white,
+                        items: unitOptions.map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedUnitType = newValue ?? 'UN';
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
                 const SizedBox(height: 25),
 
                 SizedBox(
@@ -305,6 +343,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
     nameController.dispose();
     priceController.dispose();
     stockController.dispose();
+    brandController.dispose(); 
     super.dispose();
   }
 }

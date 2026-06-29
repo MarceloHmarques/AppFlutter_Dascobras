@@ -319,26 +319,41 @@ class CartPage extends StatelessWidget {
 
                 const SizedBox(width: 16),
 
-                // Preço Unitário
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        "Preço",
-                        style: TextStyle(fontSize: 11, color: Colors.grey),
-                      ),
-                      Text(
-                        "R\$ ${item.product.price.toStringAsFixed(2)}",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF0D3F87),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+  child: GestureDetector(
+    behavior: HitTestBehavior.opaque, 
+    onTap: () => _showEditPriceDialog(context, saleVm, item),
+    child: Padding(
+      padding: const EdgeInsets.all(8.0), 
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                "Preço ",
+                style: TextStyle(fontSize: 11, color: Colors.grey),
+              ),
+              Icon(Icons.edit, size: 12, color: const Color(0xFF0D3F87)), 
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            "R\$ ${item.unitPrice.toStringAsFixed(2)}",
+            style: TextStyle(
+              fontSize: 14,
+              color: const Color(0xFF0D3F87),
+              fontWeight: FontWeight.bold,
+              decoration: item.customPrice != null ? TextDecoration.underline : TextDecoration.none,
+              fontStyle: item.customPrice != null ? FontStyle.italic : FontStyle.normal,
+            ),
+          ),
+        ],
+      ),
+    ),
+  ),
+),
 
                 // Total
                 Expanded(
@@ -438,39 +453,60 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  void _showErrorSnackBar(BuildContext context, dynamic error) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(error.toString().replaceFirst('Exception: ', '')),
-        backgroundColor: Colors.red,
-        duration: const Duration(seconds: 2),
-      ),
+  void _showEditPriceDialog(BuildContext context, SaleViewModel saleVm, dynamic item) {
+    final TextEditingController priceController = TextEditingController(
+      text: item.unitPrice.toStringAsFixed(2),
     );
-  }
 
-  void _showClearCartDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text("Limpar carrinho"),
-        content: const Text(
-          "Tem certeza que deseja remover todos os produtos?",
+        title: Text("Alterar Preço - ${item.product.name}"),
+        content: TextField(
+          controller: priceController,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: "Preço Unitário (R\$)",
+            border: OutlineInputBorder(),
+            prefixText: "R\$ ",
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text("Cancelar"),
           ),
-          TextButton(
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF0D3F87),
+              foregroundColor: Colors.white,
+            ),
             onPressed: () {
-              final saleVm = dialogContext.read<SaleViewModel>();
-              saleVm.cancelSale();
-              Navigator.pop(dialogContext);
+              final double? newPrice = double.tryParse(priceController.text.replaceAll(',', '.'));
+              if (newPrice != null) {
+                try {
+                  saleVm.changeProductPrice(item, newPrice);
+                  Navigator.pop(dialogContext);
+                } catch (e) {
+                  _showErrorSnackBar(context, e);
+                }
+              } else {
+                _showErrorSnackBar(context, "Insira um preço válido.");
+              }
             },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text("Limpar"),
+            child: const Text("Confirmar"),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(BuildContext context, dynamic error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(error.toString().replaceFirst('Exception: ', '')),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 2),
       ),
     );
   }

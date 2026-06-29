@@ -6,6 +6,8 @@ class ProductSearchModel {
   int stock;
   final int categoryId;
   final String category;
+  final String brand;    
+  final String unitType; 
 
   ProductSearchModel({
     required this.id,
@@ -15,6 +17,8 @@ class ProductSearchModel {
     required this.stock,
     required this.categoryId,
     required this.category,
+    required this.brand,    
+    required this.unitType, 
   });
 
   factory ProductSearchModel.fromMap(Map<String, dynamic> map) {
@@ -28,6 +32,8 @@ class ProductSearchModel {
       category: map['category'] == null
           ? 'Sem categoria'
           : map['category']['name'].toString().trim(),
+      brand: map['brand'] ?? 'Sem Marca', 
+      unitType: map['unit_type'] ?? 'UN', 
     );
   }
 }

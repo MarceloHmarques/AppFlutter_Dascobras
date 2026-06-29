@@ -21,9 +21,20 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
     text: "1",
   );
 
+  late final TextEditingController priceController;
+
   final currency = NumberFormat.currency(locale: 'pt_BR', symbol: 'R\$');
 
   int quantity = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    priceController = TextEditingController(
+      text: widget.product.price.toStringAsFixed(2),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -105,7 +116,38 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
                     ),
                   ),
 
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 25),
+                  const Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Preço de Venda Praticado:",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0D3F87),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: priceController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: InputDecoration(
+                      prefixText: "R\$ ",
+                      hintText: "Digite o novo preço se desejar alterar",
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: Colors.grey.shade400, width: 1.5),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: const BorderSide(color: Color(0xFF0D3F87), width: 2),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
 
                   const Align(
                     alignment: Alignment.centerLeft,
@@ -177,23 +219,16 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
                             setState(() {
                               if (qtd > widget.product.stock) {
                                 quantity = widget.product.stock;
-                                quantityController.text = widget.product.stock
-                                    .toString();
-                                quantityController.selection =
-                                    TextSelection.fromPosition(
-                                      TextPosition(
-                                        offset: quantityController.text.length,
-                                      ),
-                                    );
+                                quantityController.text = widget.product.stock.toString();
+                                quantityController.selection = TextSelection.fromPosition(
+                                  TextPosition(offset: quantityController.text.length),
+                                );
                               } else if (qtd < 1) {
                                 quantity = 1;
                                 quantityController.text = '1';
-                                quantityController.selection =
-                                    TextSelection.fromPosition(
-                                      TextPosition(
-                                        offset: quantityController.text.length,
-                                      ),
-                                    );
+                                quantityController.selection = TextSelection.fromPosition(
+                                  TextPosition(offset: quantityController.text.length),
+                                );
                               } else {
                                 quantity = qtd;
                               }
@@ -238,16 +273,24 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
                       onPressed: widget.product.stock == 0
                           ? null
                           : () {
-                              final qtd =
-                                  int.tryParse(quantityController.text) ?? 0;
+                              final qtd = int.tryParse(quantityController.text) ?? 0;
 
                               if (qtd < 1) return;
-
                               if (qtd > widget.product.stock) return;
+
+                              final double? parsedPrice = double.tryParse(
+                                priceController.text.replaceAll(',', '.'),
+                              );
+
+                              final double? customPrice = 
+                                  (parsedPrice != null && parsedPrice != widget.product.price) 
+                                  ? parsedPrice 
+                                  : null;
 
                               context.read<SaleViewModel>().addProduct(
                                 widget.product,
                                 qtd,
+                                customPrice: customPrice,
                               );
 
                               Navigator.pop(context);
@@ -274,6 +317,7 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
   @override
   void dispose() {
     quantityController.dispose();
+    priceController.dispose();
     super.dispose();
   }
 }

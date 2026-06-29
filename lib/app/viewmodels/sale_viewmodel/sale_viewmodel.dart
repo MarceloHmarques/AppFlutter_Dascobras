@@ -7,17 +7,21 @@ import '../../model/product_search_model.dart';
 class CartItem {
   final ProductSearchModel product;
   int quantity;
+  double? customPrice; // 👈 Adicionado: guarda o preço customizado se houver
 
-  CartItem({required this.product, this.quantity = 1});
+  CartItem({required this.product, this.quantity = 1, this.customPrice});
 
-  double get subtotal => product.price * quantity;
+  // 👈 Modificado: Se houver preço customizado, usa ele; senão, usa o original do produto
+  double get unitPrice => customPrice ?? product.price;
+
+  // 👈 Modificado: O subtotal agora calcula baseado no preço ativo (original ou alterado)
+  double get subtotal => unitPrice * quantity;
 }
 
 class SaleViewModel extends ChangeNotifier {
   final supabase = Supabase.instance.client;
 
   CustomerModel? customer;
-
   List<CartItem> cart = [];
 
   void setCustomer(CustomerModel client) {
@@ -30,16 +34,28 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addProduct(ProductSearchModel product, int quantity) async {
+  Future<void> addProduct(ProductSearchModel product, int quantity, {double? customPrice}) async {
     final index = cart.indexWhere((item) => item.product.id == product.id);
 
     if (index >= 0) {
       cart[index].quantity += quantity;
+      if (customPrice != null) {
+        cart[index].customPrice = customPrice;
+      }
     } else {
-      cart.add(CartItem(product: product, quantity: quantity));
+      cart.add(CartItem(product: product, quantity: quantity, customPrice: customPrice));
     }
 
     notifyListeners();
+  }
+
+  // 🔥 NOVA FUNÇÃO: Chama essa função na View quando o usuário editar o preço
+  void changeProductPrice(CartItem cartItem, double newPrice) {
+    if (newPrice < 0) {
+      throw Exception('O preço não pode ser negativo.');
+    }
+    cartItem.customPrice = newPrice;
+    notifyListeners(); // Atualiza o total e os valores na tela
   }
 
   Future<void> removeProduct(ProductSearchModel product) async {
@@ -51,7 +67,6 @@ class SaleViewModel extends ChangeNotifier {
         .eq("id", product.id);
 
     cart.remove(item);
-
     notifyListeners();
   }
 
@@ -59,7 +74,6 @@ class SaleViewModel extends ChangeNotifier {
     if (cartItem.quantity >= cartItem.product.stock) {
       throw Exception('Quantidade maior que o estoque disponível.');
     }
-
     cartItem.quantity++;
     notifyListeners();
   }
@@ -70,7 +84,6 @@ class SaleViewModel extends ChangeNotifier {
     } else {
       cart.remove(cartItem);
     }
-
     notifyListeners();
   }
 
@@ -82,17 +95,14 @@ class SaleViewModel extends ChangeNotifier {
     } else {
       cartItem.quantity = value;
     }
-
     notifyListeners();
   }
 
   double get total {
     double value = 0;
-
     for (var item in cart) {
       value += item.subtotal;
     }
-
     return value;
   }
 
@@ -128,7 +138,7 @@ class SaleViewModel extends ChangeNotifier {
         "sale_id": saleId,
         "product_id": item.product.id,
         "quantity": item.quantity,
-        "unit_price": item.product.price,
+        "unit_price": item.unitPrice, // 👈 Modificado: Salva o preço correto (original ou alterado)
         "subtotal": item.subtotal,
       });
 
@@ -140,7 +150,6 @@ class SaleViewModel extends ChangeNotifier {
 
     cart.clear();
     customer = null;
-
     notifyListeners();
   }
 
@@ -150,55 +159,23 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> finishSale() async {
+ Future<void> finishSale() async {
     if (customer == null) {
       throw Exception('Selecione um cliente.');
     }
-    await saveSale(
-      paymentMethod: "PIx",
-      statusOrder: "Pendente",
-      userId: Supabase.instance.client.auth.currentUser?.id ?? "",
-    );
+    
     if (cart.isEmpty) {
       throw Exception('Carrinho vazio.');
     }
 
     try {
-      final saleResponse = await supabase
-          .from('sale')
-          .insert({
-            'customer_id': customer!.id,
-            'total': total,
-            'payment_method': 'DINHEIRO',
-            'status': 'CONCLUIDA',
-          })
-          .select()
-          .single();
-
-      final saleId = saleResponse['id'];
-
-      for (final item in cart) {
-        if (item.quantity > item.product.stock) {
-          throw Exception('Estoque insuficiente para ${item.product.name}.');
-        }
-
-        await supabase.from('sale_item').insert({
-          'sale_id': saleId,
-          'product_id': item.product.id,
-          'quantity': item.quantity,
-          'unit_price': item.product.price,
-          'subtotal': item.subtotal,
-        });
-
-        await supabase
-            .from('product')
-            .update({'stock': item.product.stock - item.quantity})
-            .eq('id', item.product.id);
-      }
-
-      cart.clear();
-      customer = null;
-      notifyListeners();
+      // Centraliza a gravação usando a sua função padrão saveSale
+      // com os dados que você definiu para o fechamento da venda
+      await saveSale(
+        paymentMethod: "DINHEIRO",
+        statusOrder: "CONCLUIDA",
+        userId: Supabase.instance.client.auth.currentUser?.id ?? "",
+      );
     } catch (e) {
       throw Exception('Erro ao finalizar venda: $e');
     }

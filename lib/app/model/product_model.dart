@@ -6,6 +6,8 @@ class ProductModel {
   final int stock;
   final double price;
   final String category;
+  final String brand;    
+  final String unitType; 
 
   ProductModel({
     required this.id,
@@ -15,6 +17,8 @@ class ProductModel {
     required this.stock,
     required this.price,
     required this.category,
+    required this.brand,    
+    required this.unitType, 
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
@@ -26,6 +30,8 @@ class ProductModel {
       stock: json['stock'],
       price: json['price'],
       category: json['category'],
+      brand: json['brand'] ?? 'Sem Marca', 
+      unitType: json['unit_type'] ?? 'UN', 
     );
   }
 
@@ -36,5 +42,7 @@ class ProductModel {
     'stock': stock,
     'price': price,
     'category': category,
+    'brand': brand,       
+    'unit_type': unitType, 
   };
 }

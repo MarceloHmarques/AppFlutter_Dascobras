@@ -80,7 +80,7 @@ class HomeSearchViewmodel extends ChangeNotifier {
             .toList(),
       ];
 
-      applyFilters(); // mantém filtros e atualiza lista
+      applyFilters(); 
 
       notifyListeners();
     } catch (e) {
@@ -143,6 +143,8 @@ class HomeSearchViewmodel extends ChangeNotifier {
     required double price,
     required int stock,
     required int categoryId,
+    required String brand,    
+    required String unitType, 
   }) async {
     await supabase.from('product').insert({
       'name': name,
@@ -150,6 +152,8 @@ class HomeSearchViewmodel extends ChangeNotifier {
       'price': price,
       'stock': stock,
       'category_id': categoryId,
+      'brand': brand,         
+      'unit_type': unitType,   
     });
 
     await loadProduct(force: true);
