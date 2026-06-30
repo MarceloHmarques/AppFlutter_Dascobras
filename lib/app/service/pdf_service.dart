@@ -9,11 +9,13 @@ import 'package:printing/printing.dart';
 
 import '../viewmodels/sale_viewmodel/sale_viewmodel.dart';
 
+import 'package:intl/intl.dart';
+
 class PdfService {
   static Future<File> generate(SaleViewModel saleVm) async {
     final pdf = pw.Document();
+    final formatter = NumberFormat.currency(locale: 'pt_BR', symbol: '');
 
-    // Carregando a logo oficial com fundo transparente
     final logo = await imageFromAssetBundle('lib/app/assets/img/LogoEmpresa2.png');
 
     pdf.addPage(
@@ -21,9 +23,9 @@ class PdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.all(20), 
         build: (context) {
-          return [
+          return [ 
             //-----------------------------------------------------------------
-            // PARTE 1: CABEÇALHO ESTRUTURADO (IDÊNTICO AO PAPEL DA FOTO)
+            // PARTE 1: CABEÇALHO ESTRUTURADO 
             //-----------------------------------------------------------------
             pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -109,13 +111,16 @@ class PdfService {
 
                 // 3. BLOCO DIREITO: Logo da Empresa
                 pw.Expanded(
-                  flex: 3,
+                  flex: 4, 
                   child: pw.Align(
                     alignment: pw.Alignment.topRight,
                     child: pw.Container(
-                      height: 50,
-                      width: 90,
-                      child: pw.Image(logo, fit: pw.BoxFit.contain),
+                      height: 70,  
+                      width: 140,   
+                      child: pw.Image(
+                        logo, 
+                        fit: pw.BoxFit.contain, 
+                      ),
                     ),
                   ),
                 ),
@@ -127,10 +132,10 @@ class PdfService {
             pw.SizedBox(height: 5),
 
             //-----------------------------------------------------------------
-            // PARTE 2: DADOS DO CLIENTE E VENDEDOR (ESTILO DO PAPEL)
+            // PARTE 2: DADOS DO CLIENTE E VENDEDOR
             //-----------------------------------------------------------------
             pw.Column(
-              crossAxisAlignment: pw.CrossAxisAlignment.start, // Corrigido aqui!
+              crossAxisAlignment: pw.CrossAxisAlignment.start, 
               children: [
                 pw.Text(
                   "CLIENTE: ${saleVm.customer?.id.toString().padLeft(5, '0') ?? ""} - ${saleVm.customer?.name ?? ""}".toUpperCase(),
@@ -177,12 +182,8 @@ class PdfService {
                 pw.Row(
                   children: [
                     pw.Expanded(
-                      flex: 5,
+                      flex: 8,
                       child: pw.Text("CNPJ/CPF: ${saleVm.customer?.cpforcnpj ?? ""}", style: const pw.TextStyle(fontSize: 8.5)),
-                    ),
-                    pw.Expanded(
-                      flex: 3,
-                      child: pw.Text("INSC. EST.: 0", style: const pw.TextStyle(fontSize: 8.5)),
                     ),
                     pw.Expanded(
                       flex: 3,
@@ -212,7 +213,7 @@ class PdfService {
             pw.SizedBox(height: 5),
 
             //-----------------------------------------------------------------
-            // PARTE 3: CABEÇALHO DA TABELA DE ITENS (ESTILO DO PAPEL)
+            // PARTE 3: CABEÇALHO DA TABELA DE ITENS 
             //-----------------------------------------------------------------
             pw.Row(
               children: [
@@ -231,7 +232,7 @@ class PdfService {
             pw.Divider(thickness: 1),
 
             //-----------------------------------------------------------------
-            // PRODUTOS DA LISTA (ESTILO DO PAPEL)
+            // PRODUTOS DA LISTA 
             //-----------------------------------------------------------------
             ...saleVm.cart.map(
               (item) => pw.Container(
@@ -299,7 +300,7 @@ class PdfService {
             pw.Divider(thickness: 1),
 
             //-----------------------------------------------------------------
-            // PARTE 4: TOTAIS E VALORES CONSOLIDADOS (RODAPÉ)
+            // PARTE 4: TOTAIS E VALORES CONSOLIDADOS 
             //-----------------------------------------------------------------
             pw.SizedBox(height: 5),
             pw.Row(
@@ -325,7 +326,6 @@ class PdfService {
                       pw.Text("TOTALIZAÇÃO: R\$ ${saleVm.total.toStringAsFixed(2)}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                       pw.SizedBox(height: 2),
                       pw.Text("QUANT. DE ITENS: ${saleVm.cart.length}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
-                      pw.Text("Usuário: RAIZA", style: const pw.TextStyle(fontSize: 8)),
                       pw.Text(
                         "Data/Hora: ${DateTime.now().day.toString().padLeft(2, '0')}/${DateTime.now().month.toString().padLeft(2, '0')}/${DateTime.now().year} ${DateTime.now().hour.toString().padLeft(2, '0')}:${DateTime.now().minute.toString().padLeft(2, '0')}",
                         style: const pw.TextStyle(fontSize: 7),
@@ -348,7 +348,6 @@ class PdfService {
 
     final bytes = await pdf.save();
 
-    // INTERCEPTAÇÃO PARA A WEB (IPHONE / NAVEGADOR)
     if (kIsWeb) {
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => bytes,
@@ -356,7 +355,6 @@ class PdfService {
       );
       return File(''); 
     } 
-    // SE FOR DISPOSITIVO NATIVO
     else {
       final directory = await getApplicationDocumentsDirectory();
       final file = File(
@@ -465,7 +463,7 @@ class PdfService {
                   child: pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text("TOTALIZAÇÃO: R\$ ${sale['total']}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
+                      pw.Text("TOTALIZAÇÃO: R\$ ${NumberFormat('#,##0.00', 'en_US').format(sale['total'])}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                       pw.Text("QUANT. DE ITENS: ${items.length}", style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9)),
                     ],
                   ),
@@ -479,7 +477,6 @@ class PdfService {
 
     final bytes = await pdf.save();
 
-    // INTERCEPTAÇÃO PARA A WEB (IPHONE / NAVEGADOR) - Corrigido aqui!
     if (kIsWeb) {
       await Printing.layoutPdf(
         onLayout: (PdfPageFormat format) async => bytes,
@@ -487,7 +484,6 @@ class PdfService {
       );
       return File('');
     } 
-    // SE FOR DISPOSITIVO NATIVO
     else {
       final directory = await getApplicationDocumentsDirectory();
       final file = File("${directory.path}/Venda_${sale['id']}.pdf");
