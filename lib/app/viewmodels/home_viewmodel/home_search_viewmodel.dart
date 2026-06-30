@@ -145,6 +145,7 @@ class HomeSearchViewmodel extends ChangeNotifier {
     required int categoryId,
     required String brand,    
     required String unitType, 
+    required double commissionValue,
   }) async {
     await supabase.from('product').insert({
       'name': name,
@@ -154,6 +155,7 @@ class HomeSearchViewmodel extends ChangeNotifier {
       'category_id': categoryId,
       'brand': brand,         
       'unit_type': unitType,   
+      'commission_value': commissionValue,
     });
 
     await loadProduct(force: true);

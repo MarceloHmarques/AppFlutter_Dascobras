@@ -7,15 +7,14 @@ import '../../model/product_search_model.dart';
 class CartItem {
   final ProductSearchModel product;
   int quantity;
-  double? customPrice; // 👈 Adicionado: guarda o preço customizado se houver
-
+  double? customPrice; 
   CartItem({required this.product, this.quantity = 1, this.customPrice});
 
-  // 👈 Modificado: Se houver preço customizado, usa ele; senão, usa o original do produto
   double get unitPrice => customPrice ?? product.price;
 
-  // 👈 Modificado: O subtotal agora calcula baseado no preço ativo (original ou alterado)
   double get subtotal => unitPrice * quantity;
+
+  double get totalCommission => (product.commissionValue ?? 0.0) * quantity;
 }
 
 class SaleViewModel extends ChangeNotifier {
@@ -49,13 +48,12 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // 🔥 NOVA FUNÇÃO: Chama essa função na View quando o usuário editar o preço
   void changeProductPrice(CartItem cartItem, double newPrice) {
     if (newPrice < 0) {
       throw Exception('O preço não pode ser negativo.');
     }
     cartItem.customPrice = newPrice;
-    notifyListeners(); // Atualiza o total e os valores na tela
+    notifyListeners(); 
   }
 
   Future<void> removeProduct(ProductSearchModel product) async {
@@ -106,6 +104,14 @@ class SaleViewModel extends ChangeNotifier {
     return value;
   }
 
+  double get totalSaleCommission {
+    double value = 0;
+    for (var item in cart) {
+      value += item.totalCommission;
+    }
+    return value;
+  }
+
   Future<void> saveSale({
     required String paymentMethod,
     required String statusOrder,
@@ -138,8 +144,9 @@ class SaleViewModel extends ChangeNotifier {
         "sale_id": saleId,
         "product_id": item.product.id,
         "quantity": item.quantity,
-        "unit_price": item.unitPrice, // 👈 Modificado: Salva o preço correto (original ou alterado)
+        "unit_price": item.unitPrice, 
         "subtotal": item.subtotal,
+        "commission_paid": item.product.commissionValue,
       });
 
       await supabase
@@ -169,10 +176,8 @@ class SaleViewModel extends ChangeNotifier {
     }
 
     try {
-      // Centraliza a gravação usando a sua função padrão saveSale
-      // com os dados que você definiu para o fechamento da venda
       await saveSale(
-        paymentMethod: "DINHEIRO",
+        paymentMethod: "dinheiro",
         statusOrder: "CONCLUIDA",
         userId: Supabase.instance.client.auth.currentUser?.id ?? "",
       );

@@ -248,7 +248,7 @@ class PdfService {
                     ),
                     pw.Expanded(
                       flex: 2,
-                      child: pw.Text("DISTRIBUIDORA".toUpperCase(), style: const pw.TextStyle(fontSize: 7.5)),
+                      child: pw.Text(item.product.brand.toUpperCase(), style: const pw.TextStyle(fontSize: 7.5)),
                     ),
                     pw.Expanded(
                       flex: 2,
@@ -256,7 +256,7 @@ class PdfService {
                     ),
                     pw.Expanded(
                       flex: 2,
-                      child: pw.Text("UN", style: const pw.TextStyle(fontSize: 7.5)),
+                      child: pw.Text(item.product.unitType, style: const pw.TextStyle(fontSize: 7.5)),
                     ),
                     pw.Expanded(
                       flex: 1,

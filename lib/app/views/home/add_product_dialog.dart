@@ -24,6 +24,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
   final priceController = TextEditingController();
   final stockController = TextEditingController();
   final brandController = TextEditingController(); 
+  final commissionController = TextEditingController(text: '0,00'); 
 
   final supabase = Supabase.instance.client;
   final ProductImageService imageService = ProductImageService();
@@ -34,7 +35,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
   int? selectedCategory;
   File? selectedImage;
   bool loading = false;
-
+  bool isAdmin = false; 
   String selectedUnitType = 'UN'; 
   final List<String> unitOptions = ['UN', 'Fardo', 'Caixa', 'Saco', 'Kg'];
 
@@ -44,6 +45,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
   void initState() {
     super.initState();
     loadCategories();
+    checkUserPermission(); 
   }
 
   Future<void> loadCategories() async {
@@ -54,6 +56,29 @@ class _AddProductDialogState extends State<AddProductDialog> {
     setState(() {
       categories = List<Map<String, dynamic>>.from(response);
     });
+  }
+
+  Future<void> checkUserPermission() async {
+    try {
+      final user = supabase.auth.currentUser;
+      if (user == null) return;
+
+      final response = await supabase
+          .from('profiles')
+          .select('is_admin')
+          .eq('id', user.id)
+          .single();
+
+      if (!mounted) return;
+
+      setState(() {
+        isAdmin = response['is_admin'] ?? false;
+      });
+    } catch (e) {
+      if (mounted) {
+        setState(() => isAdmin = false);
+      }
+    }
   }
 
   Future<void> pickImage() async {
@@ -103,6 +128,10 @@ class _AddProductDialogState extends State<AddProductDialog> {
 
       final imageUrl = await uploadImage();
 
+      final cleanCommission = double.parse(
+        commissionController.text.replaceAll('.', '').replaceAll(',', '.'),
+      );
+
       await context.read<HomeSearchViewmodel>().addProduct(
         name: nameController.text.trim(),
         imageurl: imageUrl,
@@ -111,8 +140,9 @@ class _AddProductDialogState extends State<AddProductDialog> {
         ),
         stock: int.parse(stockController.text),
         categoryId: selectedCategory!,
-        brand: brandController.text.trim().isEmpty ? 'Sem Marca' : brandController.text.trim(), // 👈 Adicionado
-        unitType: selectedUnitType, // 👈 Adicionado
+        brand: brandController.text.trim().isEmpty ? 'Sem Marca' : brandController.text.trim(), 
+        unitType: selectedUnitType, 
+        commissionValue: cleanCommission, 
       );
 
       if (!mounted) return;
@@ -305,6 +335,26 @@ class _AddProductDialogState extends State<AddProductDialog> {
                   ],
                 ),
 
+                const SizedBox(height: 15),
+
+                TextFormField(
+                  controller: commissionController,
+                  enabled: isAdmin, 
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [Mask.currencyFormatter],
+                  decoration: InputDecoration(
+                    labelText: 'Ganho do Vendedor (Por Unidade)',
+                    prefixText: 'R\$ ',
+                    fillColor: isAdmin ? Colors.white : Colors.grey.shade200,
+                    filled: !isAdmin,
+                    helperText: isAdmin ? null : 'Apenas administradores podem gerenciar este valor.',
+                    helperStyle: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w500),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(height: 25),
 
                 SizedBox(
@@ -344,6 +394,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
     priceController.dispose();
     stockController.dispose();
     brandController.dispose(); 
+    commissionController.dispose(); 
     super.dispose();
   }
 }

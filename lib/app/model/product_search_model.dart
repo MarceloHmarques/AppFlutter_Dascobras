@@ -8,6 +8,7 @@ class ProductSearchModel {
   final String category;
   final String brand;    
   final String unitType; 
+  final double commissionValue; 
 
   ProductSearchModel({
     required this.id,
@@ -19,6 +20,7 @@ class ProductSearchModel {
     required this.category,
     required this.brand,    
     required this.unitType, 
+    required this.commissionValue, 
   });
 
   factory ProductSearchModel.fromMap(Map<String, dynamic> map) {
@@ -34,6 +36,7 @@ class ProductSearchModel {
           : map['category']['name'].toString().trim(),
       brand: map['brand'] ?? 'Sem Marca', 
       unitType: map['unit_type'] ?? 'UN', 
+      commissionValue: (map['commission_value'] as num?)?.toDouble() ?? 0.0,
     );
   }
 }
