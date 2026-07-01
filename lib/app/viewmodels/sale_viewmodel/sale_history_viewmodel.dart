@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:DasCobras/app/service/auth_session_service.dart';
 
 class SaleHistoryViewModel extends ChangeNotifier {
   final supabase = Supabase.instance.client;
@@ -11,19 +12,20 @@ class SaleHistoryViewModel extends ChangeNotifier {
 
   Future<void> loadSales() async {
     try {
+      final companyId = await AuthSessionService().getCompanyId();
+
       final response = await supabase
           .from('sale')
           .select('''
-            *,
-            customer (
-              id,
-              name,
-              cpforcnpj,
-              city,
-              state_
-            )
-          ''')
-          .order('id', ascending: false);
+      *,
+      customer:customer_id (
+        id,
+        name,
+        cpforcnpj
+      )
+    ''')
+          .eq('company_id', companyId)
+          .order('sale_date', ascending: false);
 
       sales = List<Map<String, dynamic>>.from(response);
       filteredSales = List.from(sales);
@@ -124,25 +126,28 @@ class SaleHistoryViewModel extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> getSaleItems(int saleId) async {
-    final response = await supabase
-        .from('sale_item')
-        .select()
-        .eq('sale_id', saleId);
+    try {
+      final response = await supabase
+          .from('sale_item')
+          .select('''
+          *,
+          product:product_id (
+            id,
+            name
+          )
+        ''')
+          .eq('sale_id', saleId);
 
-    final List<Map<String, dynamic>> items = List<Map<String, dynamic>>.from(
-      response,
-    );
+      final items = List<Map<String, dynamic>>.from(response);
 
-    for (var item in items) {
-      final product = await supabase
-          .from('product')
-          .select('name')
-          .eq('id', item['product_id'])
-          .single();
+      for (var item in items) {
+        item['product_name'] = item['product']?['name'] ?? 'Produto';
+      }
 
-      item['product_name'] = product['name'];
+      return items;
+    } catch (e) {
+      debugPrint('Erro ao carregar itens da venda: $e');
+      return [];
     }
-
-    return items;
   }
 }

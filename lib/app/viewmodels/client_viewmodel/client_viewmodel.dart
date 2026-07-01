@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
-
+import 'package:DasCobras/app/service/auth_session_service.dart';
 import '../../model/customer_model.dart';
 
 class ClientViewModel extends ChangeNotifier {
   final supabase = Supabase.instance.client;
-
+  final authSession = AuthSessionService();
   List<CustomerModel> customers = [];
   List<CustomerModel> filteredCustomers = [];
 
+  Future<String> _getCompanyId() async {
+    return await authSession.getCompanyId();
+  }
+
   Future<void> loadCustomers() async {
     try {
+      final companyId = await _getCompanyId();
+
       final response = await supabase
           .from('customer')
           .select()
-          .eq('is_active', true);
+          .eq('is_active', true)
+          .eq('company_id', companyId)
+          .order('name');
+
       customers = response
           .map<CustomerModel>((e) => CustomerModel.fromMap(e))
           .toList();
@@ -23,7 +32,9 @@ class ClientViewModel extends ChangeNotifier {
       filteredCustomers = List.from(customers);
 
       notifyListeners();
-    } catch (e) {}
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   void searchCustomer(String value) {
@@ -57,6 +68,7 @@ class ClientViewModel extends ChangeNotifier {
         'yyyy-MM-dd',
       ).format(DateFormat('dd/MM/yyyy').parse(birthDate));
 
+      final companyId = await _getCompanyId();
       await supabase.from('customer').insert({
         'name': name,
         'birth_date': formattedDate,
@@ -83,11 +95,17 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> deleteCustomer(int id) async {
     try {
-      await supabase.from('customer').update({'is_active': false}).eq('id', id);
+      final companyId = await _getCompanyId();
+
+      await supabase
+          .from('customer')
+          .update({'is_active': false})
+          .eq('id', id)
+          .eq('company_id', companyId);
 
       await loadCustomers();
     } catch (e) {
-      print(e);
+      debugPrint(e.toString());
       rethrow;
     }
   }
@@ -115,6 +133,8 @@ class ClientViewModel extends ChangeNotifier {
       ).format(DateFormat('dd/MM/yyyy').parse(birthDate));
     }
 
+    final companyId = await _getCompanyId();
+
     await supabase
         .from('customer')
         .update({
@@ -131,7 +151,8 @@ class ClientViewModel extends ChangeNotifier {
           'house_number': houseNumber,
           'address': address,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('company_id', companyId);
 
     await loadCustomers();
   }

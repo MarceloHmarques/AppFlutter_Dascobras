@@ -3,25 +3,32 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../model/customer_model.dart';
 import '../../model/product_search_model.dart';
+import 'package:DasCobras/app/service/auth_session_service.dart';
 
 class CartItem {
   final ProductSearchModel product;
   int quantity;
-  double? customPrice; 
+  double? customPrice;
+
   CartItem({required this.product, this.quantity = 1, this.customPrice});
 
   double get unitPrice => customPrice ?? product.price;
 
   double get subtotal => unitPrice * quantity;
 
-  double get totalCommission => (product.commissionValue ?? 0.0) * quantity;
+  double get totalCommission => product.commissionValue * quantity;
 }
 
 class SaleViewModel extends ChangeNotifier {
   final supabase = Supabase.instance.client;
+  final authSession = AuthSessionService();
 
   CustomerModel? customer;
   List<CartItem> cart = [];
+
+  Future<String> _getCompanyId() async {
+    return await authSession.getCompanyId();
+  }
 
   void setCustomer(CustomerModel client) {
     customer = client;
@@ -33,16 +40,27 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addProduct(ProductSearchModel product, int quantity, {double? customPrice}) async {
+  Future<void> addProduct(
+    ProductSearchModel product,
+    int quantity, {
+    double? customPrice,
+  }) async {
     final index = cart.indexWhere((item) => item.product.id == product.id);
 
     if (index >= 0) {
       cart[index].quantity += quantity;
+
       if (customPrice != null) {
         cart[index].customPrice = customPrice;
       }
     } else {
-      cart.add(CartItem(product: product, quantity: quantity, customPrice: customPrice));
+      cart.add(
+        CartItem(
+          product: product,
+          quantity: quantity,
+          customPrice: customPrice,
+        ),
+      );
     }
 
     notifyListeners();
@@ -52,40 +70,46 @@ class SaleViewModel extends ChangeNotifier {
     if (newPrice < 0) {
       throw Exception('O preço não pode ser negativo.');
     }
+
     cartItem.customPrice = newPrice;
-    notifyListeners(); 
+    notifyListeners();
   }
 
   Future<void> removeProduct(ProductSearchModel product) async {
+    final companyId = await _getCompanyId();
+
     final item = cart.firstWhere((e) => e.product.id == product.id);
 
     await supabase
         .from("product")
         .update({"stock": product.stock + item.quantity})
-        .eq("id", product.id);
+        .eq("id", product.id)
+        .eq("company_id", companyId);
 
     cart.remove(item);
     notifyListeners();
   }
 
-  void increaseQuantity(cartItem) {
+  void increaseQuantity(CartItem cartItem) {
     if (cartItem.quantity >= cartItem.product.stock) {
       throw Exception('Quantidade maior que o estoque disponível.');
     }
+
     cartItem.quantity++;
     notifyListeners();
   }
 
-  void decreaseQuantity(cartItem) {
+  void decreaseQuantity(CartItem cartItem) {
     if (cartItem.quantity > 1) {
       cartItem.quantity--;
     } else {
       cart.remove(cartItem);
     }
+
     notifyListeners();
   }
 
-  void changeQuantity(cartItem, int value) {
+  void changeQuantity(CartItem cartItem, int value) {
     if (value <= 0) {
       cart.remove(cartItem);
     } else if (value > cartItem.product.stock) {
@@ -93,22 +117,27 @@ class SaleViewModel extends ChangeNotifier {
     } else {
       cartItem.quantity = value;
     }
+
     notifyListeners();
   }
 
   double get total {
     double value = 0;
+
     for (var item in cart) {
       value += item.subtotal;
     }
+
     return value;
   }
 
   double get totalSaleCommission {
     double value = 0;
+
     for (var item in cart) {
       value += item.totalCommission;
     }
+
     return value;
   }
 
@@ -125,6 +154,8 @@ class SaleViewModel extends ChangeNotifier {
       throw Exception("Carrinho vazio.");
     }
 
+    final companyId = await _getCompanyId();
+
     final sale = await supabase
         .from("sale")
         .insert({
@@ -133,6 +164,7 @@ class SaleViewModel extends ChangeNotifier {
           "status_order": statusOrder,
           "payment_method": paymentMethod,
           "user_id": userId,
+          "company_id": companyId,
         })
         .select()
         .single();
@@ -144,7 +176,7 @@ class SaleViewModel extends ChangeNotifier {
         "sale_id": saleId,
         "product_id": item.product.id,
         "quantity": item.quantity,
-        "unit_price": item.unitPrice, 
+        "unit_price": item.unitPrice,
         "subtotal": item.subtotal,
         "commission_paid": item.product.commissionValue,
       });
@@ -152,7 +184,8 @@ class SaleViewModel extends ChangeNotifier {
       await supabase
           .from("product")
           .update({"stock": item.product.stock - item.quantity})
-          .eq("id", item.product.id);
+          .eq("id", item.product.id)
+          .eq("company_id", companyId);
     }
 
     cart.clear();
@@ -166,11 +199,11 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
- Future<void> finishSale() async {
+  Future<void> finishSale() async {
     if (customer == null) {
       throw Exception('Selecione um cliente.');
     }
-    
+
     if (cart.isEmpty) {
       throw Exception('Carrinho vazio.');
     }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:DasCobras/app/service/auth_session_service.dart';
 
 import 'package:DasCobras/app/views/widgets/home/product_image_picker.dart';
 import 'package:DasCobras/app/service/product_image_service.dart';
@@ -25,9 +26,29 @@ class _EditProductDialogState extends State<EditProductDialog> {
   late TextEditingController nameController;
   late TextEditingController priceController;
   late TextEditingController stockController;
+  late TextEditingController brandController;
+  late TextEditingController commissionController;
 
   final supabase = Supabase.instance.client;
   final ProductImageService imageService = ProductImageService();
+
+  String selectedUnitType = 'UN';
+  List<Map<String, dynamic>> unitTypes = [];
+  Future<void> loadUnitTypes() async {
+    final companyId = await AuthSessionService().getCompanyId();
+
+    final response = await supabase
+        .from('unit_type')
+        .select('id, name')
+        .eq('company_id', companyId)
+        .order('name');
+
+    if (!mounted) return;
+
+    setState(() {
+      unitTypes = List<Map<String, dynamic>>.from(response);
+    });
+  }
 
   List<Map<String, dynamic>> categories = [];
 
@@ -39,7 +60,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
   @override
   void initState() {
     super.initState();
-
+    loadUnitTypes();
     nameController = TextEditingController(text: widget.product.name);
 
     priceController = TextEditingController(
@@ -51,13 +72,26 @@ class _EditProductDialogState extends State<EditProductDialog> {
     );
 
     selectedCategory = widget.product.categoryId;
+    brandController = TextEditingController(text: widget.product.brand);
 
+    commissionController = TextEditingController(
+      text: widget.product.commissionValue
+          .toStringAsFixed(2)
+          .replaceAll('.', ','),
+    );
+
+    selectedUnitType = widget.product.unitType;
     loadCategories();
   }
 
   Future<void> loadCategories() async {
-    final response = await supabase.from('category').select('id, name');
+    final companyId = await AuthSessionService().getCompanyId();
 
+    final response = await supabase
+        .from('category')
+        .select('id, name')
+        .eq('company_id', companyId)
+        .order('name');
     if (!mounted) return;
 
     setState(() {
@@ -104,6 +138,13 @@ class _EditProductDialogState extends State<EditProductDialog> {
         ),
         stock: int.parse(stockController.text),
         categoryId: selectedCategory!,
+        brand: brandController.text.trim().isEmpty
+            ? 'Sem Marca'
+            : brandController.text.trim(),
+        unitType: selectedUnitType,
+        commissionValue: double.parse(
+          commissionController.text.replaceAll('.', '').replaceAll(',', '.'),
+        ),
       );
 
       if (!mounted) return;
@@ -251,8 +292,54 @@ class _EditProductDialogState extends State<EditProductDialog> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 15),
 
-                const SizedBox(height: 25),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: brandController,
+                        decoration: _inputDecoration(label: 'Marca:'),
+                      ),
+                    ),
+
+                    const SizedBox(width: 10),
+
+                    Expanded(
+                      child: DropdownButtonFormField<String>(
+                        value: selectedUnitType,
+                        decoration: _inputDecoration(label: 'Opção Unidade:'),
+                        dropdownColor: Colors.white,
+                        items: unitTypes.map((unit) {
+                          return DropdownMenuItem<String>(
+                            value: unit['name'],
+                            child: Text(unit['name']),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          setState(() {
+                            selectedUnitType = value ?? 'UN';
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 15),
+
+                TextFormField(
+                  controller: commissionController,
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [Mask.currencyFormatter],
+                  decoration: InputDecoration(
+                    labelText: 'Comissão do vendedor (Un)',
+                    prefixText: 'R\$ ',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
 
                 SizedBox(
                   width: double.infinity,
@@ -290,6 +377,8 @@ class _EditProductDialogState extends State<EditProductDialog> {
     nameController.dispose();
     priceController.dispose();
     stockController.dispose();
+    brandController.dispose();
+    commissionController.dispose();
     super.dispose();
   }
 }

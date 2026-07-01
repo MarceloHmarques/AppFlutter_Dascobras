@@ -158,9 +158,11 @@ class _LoginPageState extends State<LoginPage> {
                                   password: _passwordController.text,
                                 );
 
-                                await AuthSessionService().saveLoginDate();
-                                await AuthSessionService()
-                                    .saveSessionCheckDate();
+                                final authSession = AuthSessionService();
+
+                                await authSession.loadCompanySession();
+                                await authSession.saveLoginDate();
+                                await authSession.saveSessionCheckDate();
 
                                 if (!mounted) return;
 

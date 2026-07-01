@@ -9,6 +9,7 @@ import 'package:DasCobras/app/service/validation_service/mask.dart';
 import 'package:DasCobras/app/views/widgets/home/product_image_picker.dart';
 import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:DasCobras/app/service/product_image_service.dart';
+import 'package:DasCobras/app/service/auth_session_service.dart';
 
 class AddProductDialog extends StatefulWidget {
   const AddProductDialog({super.key});
@@ -23,8 +24,8 @@ class _AddProductDialogState extends State<AddProductDialog> {
   final nameController = TextEditingController();
   final priceController = TextEditingController();
   final stockController = TextEditingController();
-  final brandController = TextEditingController(); 
-  final commissionController = TextEditingController(text: '0,00'); 
+  final brandController = TextEditingController();
+  final commissionController = TextEditingController(text: '0,00');
 
   final supabase = Supabase.instance.client;
   final ProductImageService imageService = ProductImageService();
@@ -35,8 +36,8 @@ class _AddProductDialogState extends State<AddProductDialog> {
   int? selectedCategory;
   File? selectedImage;
   bool loading = false;
-  bool isAdmin = false; 
-  String selectedUnitType = 'UN'; 
+  bool isAdmin = false;
+  String selectedUnitType = 'UN';
   final List<String> unitOptions = ['UN', 'Fardo', 'Caixa', 'Saco', 'Kg'];
 
   List<Map<String, dynamic>> categories = [];
@@ -45,11 +46,17 @@ class _AddProductDialogState extends State<AddProductDialog> {
   void initState() {
     super.initState();
     loadCategories();
-    checkUserPermission(); 
+    checkUserPermission();
   }
 
   Future<void> loadCategories() async {
-    final response = await supabase.from('category').select('id, name');
+    final companyId = await AuthSessionService().getCompanyId();
+
+    final response = await supabase
+        .from('category')
+        .select('id, name')
+        .eq('company_id', companyId)
+        .order('name');
 
     if (!mounted) return;
 
@@ -60,19 +67,12 @@ class _AddProductDialogState extends State<AddProductDialog> {
 
   Future<void> checkUserPermission() async {
     try {
-      final user = supabase.auth.currentUser;
-      if (user == null) return;
-
-      final response = await supabase
-          .from('profiles')
-          .select('is_admin')
-          .eq('id', user.id)
-          .single();
+      final role = await AuthSessionService().getRole();
 
       if (!mounted) return;
 
       setState(() {
-        isAdmin = response['is_admin'] ?? false;
+        isAdmin = role == 'OWNER' || role == 'ADMIN' || role == 'MANAGER';
       });
     } catch (e) {
       if (mounted) {
@@ -140,9 +140,11 @@ class _AddProductDialogState extends State<AddProductDialog> {
         ),
         stock: int.parse(stockController.text),
         categoryId: selectedCategory!,
-        brand: brandController.text.trim().isEmpty ? 'Sem Marca' : brandController.text.trim(), 
-        unitType: selectedUnitType, 
-        commissionValue: cleanCommission, 
+        brand: brandController.text.trim().isEmpty
+            ? 'Sem Marca'
+            : brandController.text.trim(),
+        unitType: selectedUnitType,
+        commissionValue: cleanCommission,
       );
 
       if (!mounted) return;
@@ -339,16 +341,21 @@ class _AddProductDialogState extends State<AddProductDialog> {
 
                 TextFormField(
                   controller: commissionController,
-                  enabled: isAdmin, 
+                  enabled: isAdmin,
                   keyboardType: TextInputType.number,
                   inputFormatters: [Mask.currencyFormatter],
                   decoration: InputDecoration(
-                    labelText: 'Ganho do Vendedor (Por Unidade)',
+                    labelText: 'Comissão do vendedor (Un)',
                     prefixText: 'R\$ ',
                     fillColor: isAdmin ? Colors.white : Colors.grey.shade200,
                     filled: !isAdmin,
-                    helperText: isAdmin ? null : 'Apenas administradores podem gerenciar este valor.',
-                    helperStyle: const TextStyle(color: Colors.deepOrange, fontWeight: FontWeight.w500),
+                    helperText: isAdmin
+                        ? null
+                        : 'Apenas administradores podem gerenciar este valor.',
+                    helperStyle: const TextStyle(
+                      color: Colors.deepOrange,
+                      fontWeight: FontWeight.w500,
+                    ),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -393,8 +400,8 @@ class _AddProductDialogState extends State<AddProductDialog> {
     nameController.dispose();
     priceController.dispose();
     stockController.dispose();
-    brandController.dispose(); 
-    commissionController.dispose(); 
+    brandController.dispose();
+    commissionController.dispose();
     super.dispose();
   }
 }
