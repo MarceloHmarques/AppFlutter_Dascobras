@@ -51,6 +51,8 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> addCustomer({
     required String name,
+    String? tradeName, // 🛠️ Adicionado opcional
+    String? routeId,   // 🛠️ Adicionado opcional
     required String birthDate,
     required String phone,
     required String email,
@@ -64,13 +66,19 @@ class ClientViewModel extends ChangeNotifier {
     required String address,
   }) async {
     try {
-      final formattedDate = DateFormat(
-        'yyyy-MM-dd',
-      ).format(DateFormat('dd/MM/yyyy').parse(birthDate));
+      String? formattedDate;
+      if (birthDate.trim().isNotEmpty) {
+        formattedDate = DateFormat(
+          'yyyy-MM-dd',
+        ).format(DateFormat('dd/MM/yyyy').parse(birthDate));
+      }
 
       final companyId = await _getCompanyId();
       await supabase.from('customer').insert({
+        'company_id': companyId, // 🛠️ Correção: Vinculando o cliente à empresa logada
         'name': name,
+        'trade_name': tradeName, // 🛠️ Coluna mapeada
+        'route_id': routeId,     // 🛠️ Coluna mapeada
         'birth_date': formattedDate,
         'phone': phone,
         'email': email,
@@ -93,7 +101,7 @@ class ClientViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteCustomer(int id) async {
+  Future<void> deleteCustomer(String id) async { // 🛠️ Mudado int para String para casar com o Model
     try {
       final companyId = await _getCompanyId();
 
@@ -111,8 +119,10 @@ class ClientViewModel extends ChangeNotifier {
   }
 
   Future<void> updateCustomer({
-    required int id,
+    required String id, // 🛠️ Mudado int para String para casar com o Model
     required String name,
+    String? tradeName, // 🛠️ Adicionado opcional
+    String? routeId,   // 🛠️ Adicionado opcional
     required String birthDate,
     required String phone,
     required String email,
@@ -125,7 +135,7 @@ class ClientViewModel extends ChangeNotifier {
     required String houseNumber,
     required String address,
   }) async {
-    String formattedDate = birthDate;
+    String? formattedDate = birthDate.trim().isEmpty ? null : birthDate;
 
     if (birthDate.contains('/')) {
       formattedDate = DateFormat(
@@ -139,6 +149,8 @@ class ClientViewModel extends ChangeNotifier {
         .from('customer')
         .update({
           'name': name,
+          'trade_name': tradeName, // 🛠️ Atualização da coluna ativa
+          'route_id': routeId,     // 🛠️ Atualização da coluna ativa
           'birth_date': formattedDate,
           'phone': phone,
           'email': email,

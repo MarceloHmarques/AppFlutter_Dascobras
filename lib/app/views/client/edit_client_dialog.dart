@@ -72,7 +72,7 @@ class _EditClientDialogState extends State<EditClientDialog> {
       setState(() => loading = true);
 
       await context.read<ClientViewModel>().updateCustomer(
-        id: widget.client.id,
+        id: widget.client.id.toString(), // 🛠️ Convertido nativamente para String
         name: nameController.text,
         birthDate: birthDateController.text,
         phone: phoneController.text,

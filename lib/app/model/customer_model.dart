@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 class CustomerModel {
   final int id;
   final String name;
+  final String? tradeName; // 👈 Adicione aqui
+  final String? route;     // 👈 Adicione aqui
   final String birthDate;
   final String phone;
   final String email;
@@ -18,6 +20,8 @@ class CustomerModel {
   CustomerModel({
     required this.id,
     required this.name,
+    this.tradeName,        
+    this.route,           
     required this.birthDate,
     required this.phone,
     required this.email,
@@ -35,6 +39,8 @@ class CustomerModel {
     return CustomerModel(
       id: map['id'],
       name: map['name'] ?? '',
+      tradeName: map['trade_name']?.toString(), 
+      route: map['route']?.toString(),           
       birthDate: map['birth_date'] != null
           ? DateFormat('dd/MM/yyyy').format(DateTime.parse(map['birth_date']))
           : '',

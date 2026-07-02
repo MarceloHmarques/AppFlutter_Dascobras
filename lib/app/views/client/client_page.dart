@@ -7,6 +7,7 @@ import 'package:DasCobras/app/views/home/home_page.dart';
 import 'package:DasCobras/app/views/reports/reports_page.dart';
 import 'package:DasCobras/app/views/client/create_client_dialog.dart';
 import 'package:DasCobras/app/views/client/edit_client_dialog.dart';
+import 'package:DasCobras/app/views/client/create_route_dialog.dart'; // 🛠️ Import adicionado
 import 'view_client_dialog.dart';
 import 'package:DasCobras/app/views/widgets/home/custom_bottom_nav.dart';
 import 'package:DasCobras/app/views/widgets/shared/client_search_bar.dart';
@@ -123,7 +124,7 @@ class _ClientPageState extends State<ClientPage> {
                             try {
                               await context
                                   .read<ClientViewModel>()
-                                  .deleteCustomer(client.id);
+                                  .deleteCustomer(client.id.toString());
 
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
@@ -155,15 +156,45 @@ class _ClientPageState extends State<ClientPage> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF0D3F87),
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (_) => const CreateClientDialog(),
-          );
-        },
-        child: const Icon(Icons.person_add_alt_1, color: Colors.white),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 🗺️ Botão de Rotas (Novo) - Configurado para abrir o modal de criação de rotas
+          FloatingActionButton.extended(
+            heroTag: 'btn_rotas',
+            backgroundColor: const Color(0xFF0D3F87),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const CreateRouteDialog(),
+              );
+            },
+            icon: const Icon(Icons.map_outlined, color: Colors.white),
+            label: const Text(
+              "Gerenciar Rotas", 
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+
+          // 👤 Botão de Adicionar Cliente
+          FloatingActionButton.extended(
+            heroTag: 'btn_add_cliente',
+            backgroundColor: const Color(0xFF0D3F87),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => const CreateClientDialog(),
+              );
+            },
+            icon: const Icon(Icons.person_add_alt_1_outlined, color: Colors.white),
+            label: const Text(
+              "Adicionar Cliente", 
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
 
       bottomNavigationBar: CustomBottomNav(

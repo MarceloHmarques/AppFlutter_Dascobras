@@ -16,6 +16,11 @@ class ClientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 🛠️ Tratamento para verificar se existe Nome Fantasia (trade_name) preenchido
+    final hasTradeName = client.tradeName != null && client.tradeName.toString().trim().isNotEmpty;
+    // 🛠️ Tratamento para buscar a Rota (caso ainda não exista no objeto, evita quebrar o app)
+    final routeName = client.route ?? 'Sem Rota Definida';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 15, left: 5, right: 5),
       padding: const EdgeInsets.all(12),
@@ -48,27 +53,68 @@ class ClientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // 📋 Exibe o Nome Fantasia em destaque se existir, caso contrário exibe o Razão Social / Nome
                 Text(
-                  client.name,
+                  hasTradeName ? client.tradeName.toString().toUpperCase() : client.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
 
+                // 🛠️ Se houver Nome Fantasia, mostra o Nome Civil / Razão Social logo abaixo menor
+                if (hasTradeName)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      "Razão/Nome: ${client.name}",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey.shade600,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+
                 const SizedBox(height: 4),
 
-                const Text(
-                  "CPF/CNPJ",
-                  style: TextStyle(
-                    color: Color(0xFF0D3F87),
-                    fontWeight: FontWeight.w600,
-                  ),
+                // 🌐 Row contendo o CPF/CNPJ e a ROTA lado a lado para economizar espaço
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "CPF/CNPJ",
+                          style: TextStyle(
+                            color: Color(0xFF0D3F87),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(client.cpforcnpj),
+                      ],
+                    ),
+                    const SizedBox(width: 25),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "ROTA",
+                          style: TextStyle(
+                            color: Colors.deepOrange, // 🎨 Cor em destaque para a rota
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          routeName,
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
 
-                Text(client.cpforcnpj),
-
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
 
                 GestureDetector(
                   onTap: onView,

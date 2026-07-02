@@ -5,6 +5,7 @@ import 'package:DasCobras/app/service/validation_service/personal%20_data_valida
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../viewmodels/client_viewmodel/client_viewmodel.dart';
 
@@ -17,6 +18,7 @@ class CreateClientDialog extends StatefulWidget {
 
 class _CreateClientDialogState extends State<CreateClientDialog> {
   final nameController = TextEditingController();
+  final tradeNameController = TextEditingController(); // 🛠️ Controller Novo
   final cpfController = TextEditingController();
   final birthDateController = TextEditingController();
   final phoneController = TextEditingController();
@@ -34,6 +36,30 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
   String customerType = 'PF';
   String? errorMessage;
   String? selectedState;
+  
+  String? selectedRouteId; // 🛠️ Armazena a rota selecionada
+  List<Map<String, dynamic>> routesList = []; // 🛠️ Armazena as rotas do banco
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchRoutes(); // Carrega as rotas ao abrir
+  }
+
+  // 🔄 Busca as rotas cadastradas no banco de dados para listar no Dropdown
+  Future<void> _fetchRoutes() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase.from('route').select('id, name').eq('is_active', true);
+      if (response != null) {
+        setState(() {
+          routesList = List<Map<String, dynamic>>.from(response);
+        });
+      }
+    } catch (e) {
+      print("Erro ao carregar rotas: $e");
+    }
+  }
 
   Future<void> saveCustomer() async {
     try {
@@ -42,23 +68,29 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
         errorMessage = null;
       });
 
+      final birthDateValue = birthDateController.text.trim().isEmpty 
+          ? '' 
+          : birthDateController.text.trim();
+
+      // Se seu ViewModel ainda não aceita tradeName e routeId, adicione no método addCustomer dele!
       await context.read<ClientViewModel>().addCustomer(
-        name: nameController.text,
-        birthDate: birthDateController.text,
-        phone: phoneController.text,
-        email: emailController.text,
-        cpfOrCnpj: cpfController.text,
+        name: nameController.text.trim(),
+        birthDate: birthDateValue,
+        phone: phoneController.text.trim(),
+        email: emailController.text.trim(),
+        cpfOrCnpj: cpfController.text.trim(),
         customerType: customerType,
-        state: stateController.text,
-        city: cityController.text,
-        neighborhood: neighborhoodController.text,
-        cep: cepController.text,
-        houseNumber: houseNumberController.text,
-        address: addressController.text,
+        state: stateController.text.trim(),
+        city: cityController.text.trim(),
+        neighborhood: neighborhoodController.text.trim(),
+        cep: cepController.text.trim(),
+        houseNumber: houseNumberController.text.trim(),
+        address: addressController.text.trim(),
+        // tradeName: tradeNameController.text.trim(), // Descomente quando ajustar o ViewModel
+        // routeId: selectedRouteId,                  // Descomente quando ajustar o ViewModel
       );
 
       if (!mounted) return;
-
       Navigator.pop(context);
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,7 +98,6 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
       );
     } catch (e) {
       if (!mounted) return;
-
       setState(() {
         errorMessage = e.toString().replaceFirst('Exception: ', '');
       });
@@ -129,30 +160,30 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-
                 const SizedBox(height: 20),
 
                 buildField(
-                  "Nome",
+                  "Nome / Razão Social",
                   nameController,
                   validator: (value) => PersonalDataValidation.name(value),
                   keyboardType: TextInputType.name,
+                ),
+
+                buildField(
+                  "Nome Fantasia (Opcional)",
+                  tradeNameController,
+                  keyboardType: TextInputType.text,
                 ),
 
                 DropdownButtonFormField<String>(
                   value: customerType,
                   decoration: InputDecoration(
                     labelText: 'Tipo de cliente',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'PF', child: Text('Pessoa Física')),
-                    DropdownMenuItem(
-                      value: 'PJ',
-                      child: Text('Pessoa Jurídica'),
-                    ),
+                    DropdownMenuItem(value: 'PJ', child: Text('Pessoa Jurídica')),
                   ],
                   onChanged: (value) {
                     setState(() {
@@ -161,44 +192,53 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                     });
                   },
                 ),
-
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 buildField(
                   customerType == 'PF' ? 'CPF' : 'CNPJ',
                   cpfController,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
-                    customerType == 'PF'
-                        ? Mask.cpfMaskFormatter
-                        : Mask.cnpjMaskFormatter,
+                    customerType == 'PF' ? Mask.cpfMaskFormatter : Mask.cnpjMaskFormatter,
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return customerType == 'PF'
-                          ? 'CPF obrigatório'
-                          : 'CNPJ obrigatório';
+                      return customerType == 'PF' ? 'CPF obrigatório' : 'CNPJ obrigatório';
                     }
-
                     final valid = customerType == 'PF'
                         ? PersonalValidation.utilsCpf(value)
                         : PersonalValidation.utilsCnpj(value);
-
                     if (!valid) {
-                      return customerType == 'PF'
-                          ? 'CPF inválido'
-                          : 'CNPJ inválido';
+                      return customerType == 'PF' ? 'CPF inválido' : 'CNPJ inválido';
                     }
-
                     return null;
                   },
                 ),
 
+                // 🛠️ Dropdown Dinâmico de Rotas buscando do banco
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedRouteId,
+                    decoration: InputDecoration(
+                      labelText: 'Selecione a Rota / Região',
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    ),
+                    items: routesList.map((route) {
+                      return DropdownMenuItem<String>(
+                        value: route['id'].toString(),
+                        child: Text(route['name'].toString()),
+                      );
+                    }).toList(),
+                    onChanged: (value) => setState(() => selectedRouteId = value),
+                    validator: (value) => value == null ? 'Por favor, selecione uma rota' : null,
+                  ),
+                ),
+
                 buildField(
-                  "Data de nascimento",
+                  "Data de nascimento (Opcional)",
                   birthDateController,
                   readOnly: true,
-
                   suffixIcon: const Icon(Icons.calendar_today),
                   onTap: () async {
                     final DateTime? date = await showDatePicker(
@@ -207,15 +247,12 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                       firstDate: DateTime(1900),
                       lastDate: DateTime.now(),
                     );
-
                     if (date != null) {
                       setState(() {
-                        birthDateController.text =
-                            '${date.day}/${date.month}/${date.year}';
+                        birthDateController.text = '${date.day}/${date.month}/${date.year}';
                       });
                     }
                   },
-                  validator: (value) => PersonalDataValidation.birth(value),
                 ),
 
                 buildField(
@@ -247,16 +284,11 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                         "Número",
                         houseNumberController,
                         keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        validator: (value) =>
-                            AddressValidation.numberHouse(value),
+                        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                        validator: (value) => AddressValidation.numberHouse(value),
                       ),
                     ),
-
                     const SizedBox(width: 10),
-
                     Expanded(
                       child: buildField(
                         "CEP",
@@ -292,15 +324,10 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                         value: selectedState,
                         decoration: InputDecoration(
                           labelText: 'Estado',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         items: AddressValidation.states.map((state) {
-                          return DropdownMenuItem(
-                            value: state,
-                            child: Text(state),
-                          );
+                          return DropdownMenuItem(value: state, child: Text(state));
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
@@ -315,16 +342,12 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                 ),
 
                 const SizedBox(height: 10),
-
                 if (errorMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
                     child: Text(
                       errorMessage!,
-                      style: const TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -333,21 +356,14 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF0D3F87),
-                    ),
-                    onPressed: loading
-                        ? null
-                        : () async {
-                            if (!_formKey.currentState!.validate()) return;
-                            await saveCustomer();
-                          },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0D3F87)),
+                    onPressed: loading ? null : () async {
+                      if (!_formKey.currentState!.validate()) return;
+                      await saveCustomer();
+                    },
                     child: loading
                         ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "Salvar Cliente",
-                            style: TextStyle(color: Colors.white, fontSize: 18),
-                          ),
+                        : const Text("Salvar Cliente", style: TextStyle(color: Colors.white, fontSize: 18)),
                   ),
                 ),
               ],
@@ -361,6 +377,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
   @override
   void dispose() {
     nameController.dispose();
+    tradeNameController.dispose();
     cpfController.dispose();
     birthDateController.dispose();
     phoneController.dispose();
