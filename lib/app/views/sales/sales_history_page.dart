@@ -1,8 +1,8 @@
-import 'package:DasCobras/app/service/pdf_service.dart';
+import 'package:DasCobras/app/service/pdf/pdf_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-
+import 'package:DasCobras/app/service/pdf/pdf_receipt_data.dart';
 import '../../viewmodels/sale_viewmodel/sale_history_viewmodel.dart';
 
 class SalesHistoryPage extends StatefulWidget {
@@ -292,11 +292,16 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                           onPressed: () async {
                             try {
                               final items = await vm.getSaleItems(sale['id']);
-                              final pdfFile =
-                                  await PdfService.generateHistoryPdf(
-                                    sale: sale,
-                                    items: items,
-                                  );
+                              final data = PdfReceiptData(
+                                sale: sale,
+                                company: sale['company'] ?? {},
+                                customer: sale['customer'],
+                                items: items,
+                              );
+
+                              final pdfFile = await PdfService.generateReceipt(
+                                data,
+                              );
 
                               await Share.shareXFiles([
                                 XFile(pdfFile.path),
