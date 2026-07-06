@@ -71,13 +71,14 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
       final birthDateValue = birthDateController.text.trim().isEmpty 
           ? '' 
           : birthDateController.text.trim();
+          final emailValue = emailController.text.trim().isEmpty ? null : emailController.text.trim();
 
       // Se seu ViewModel ainda não aceita tradeName e routeId, adicione no método addCustomer dele!
       await context.read<ClientViewModel>().addCustomer(
         name: nameController.text.trim(),
         birthDate: birthDateValue,
         phone: phoneController.text.trim(),
-        email: emailController.text.trim(),
+        email: emailValue ?? '',
         cpfOrCnpj: cpfController.text.trim(),
         customerType: customerType,
         state: stateController.text.trim(),
@@ -254,7 +255,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                     }
                   },
                 ),
-
+email: emailValue ?? '',
                 buildField(
                   "Telefone",
                   phoneController,
@@ -264,10 +265,16 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                 ),
 
                 buildField(
-                  "Email",
+                  "Email (Opcional)", // Label atualizado
                   emailController,
-                  validator: (value) => PersonalDataValidation.email(value),
                   keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    // Valida apenas se o usuário preencher algo
+                    if (value != null && value.isNotEmpty) {
+                      return PersonalDataValidation.email(value);
+                    }
+                    return null; // Campo vazio é aceito
+                  },
                 ),
 
                 buildField(
