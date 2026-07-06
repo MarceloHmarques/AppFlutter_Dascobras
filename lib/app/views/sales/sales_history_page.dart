@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:DasCobras/app/service/pdf/pdf_receipt_data.dart';
+import 'package:open_filex/open_filex.dart';
 import '../../viewmodels/sale_viewmodel/sale_history_viewmodel.dart';
 
 class SalesHistoryPage extends StatefulWidget {
@@ -303,9 +304,72 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                                 data,
                               );
 
-                              await Share.shareXFiles([
-                                XFile(pdfFile.path),
-                              ], text: 'Comprovante da venda #${sale['id']}');
+                              if (!mounted) return;
+
+                              showModalBottomSheet(
+                                context: context,
+                                backgroundColor: Colors.white,
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20),
+                                  ),
+                                ),
+                                builder: (context) {
+                                  return SafeArea(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 10,
+                                      ),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          ListTile(
+                                            leading: const Icon(
+                                              Icons.visibility,
+                                              color: Color(0xFF0D3F87),
+                                            ),
+                                            title: const Text(
+                                              'Visualizar PDF',
+                                              style: TextStyle(
+                                                color: Color(0xFF0D3F87),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              Navigator.pop(context);
+                                              await OpenFilex.open(
+                                                pdfFile.path,
+                                              );
+                                            },
+                                          ),
+                                          ListTile(
+                                            leading: const Icon(
+                                              Icons.share,
+                                              color: Color(0xFF0D3F87),
+                                            ),
+                                            title: const Text(
+                                              'Enviar para o cliente',
+                                              style: TextStyle(
+                                                color: Color(0xFF0D3F87),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            onTap: () async {
+                                              Navigator.pop(context);
+
+                                              await Share.shareXFiles(
+                                                [XFile(pdfFile.path)],
+                                                text:
+                                                    'Comprovante da venda #${sale['id']}',
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
                             } catch (e) {
                               debugPrint(e.toString());
 
