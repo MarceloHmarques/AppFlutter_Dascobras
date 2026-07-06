@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../viewmodels/sale_viewmodel/sale_viewmodel.dart';
-import '../../service/pdf_service.dart';
+import '../../service/pdf/pdf_service.dart';
 import '../../viewmodels/home_viewmodel/home_search_viewmodel.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:DasCobras/app/service/pdf/pdf_receipt_data.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -320,40 +321,51 @@ class CartPage extends StatelessWidget {
                 const SizedBox(width: 16),
 
                 Expanded(
-  child: GestureDetector(
-    behavior: HitTestBehavior.opaque, 
-    onTap: () => _showEditPriceDialog(context, saleVm, item),
-    child: Padding(
-      padding: const EdgeInsets.all(8.0), 
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Preço ",
-                style: TextStyle(fontSize: 11, color: Colors.grey),
-              ),
-              Icon(Icons.edit, size: 12, color: const Color(0xFF0D3F87)), 
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "R\$ ${item.unitPrice.toStringAsFixed(2)}",
-            style: TextStyle(
-              fontSize: 14,
-              color: const Color(0xFF0D3F87),
-              fontWeight: FontWeight.bold,
-              decoration: item.customPrice != null ? TextDecoration.underline : TextDecoration.none,
-              fontStyle: item.customPrice != null ? FontStyle.italic : FontStyle.normal,
-            ),
-          ),
-        ],
-      ),
-    ),
-  ),
-),
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () => _showEditPriceDialog(context, saleVm, item),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text(
+                                "Preço ",
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Icon(
+                                Icons.edit,
+                                size: 12,
+                                color: const Color(0xFF0D3F87),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "R\$ ${item.unitPrice.toStringAsFixed(2)}",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: const Color(0xFF0D3F87),
+                              fontWeight: FontWeight.bold,
+                              decoration: item.customPrice != null
+                                  ? TextDecoration.underline
+                                  : TextDecoration.none,
+                              fontStyle: item.customPrice != null
+                                  ? FontStyle.italic
+                                  : FontStyle.normal,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
 
                 // Total
                 Expanded(
@@ -453,7 +465,11 @@ class CartPage extends StatelessWidget {
     );
   }
 
-  void _showEditPriceDialog(BuildContext context, SaleViewModel saleVm, dynamic item) {
+  void _showEditPriceDialog(
+    BuildContext context,
+    SaleViewModel saleVm,
+    dynamic item,
+  ) {
     final TextEditingController priceController = TextEditingController(
       text: item.unitPrice.toStringAsFixed(2),
     );
@@ -482,7 +498,9 @@ class CartPage extends StatelessWidget {
               foregroundColor: Colors.white,
             ),
             onPressed: () {
-              final double? newPrice = double.tryParse(priceController.text.replaceAll(',', '.'));
+              final double? newPrice = double.tryParse(
+                priceController.text.replaceAll(',', '.'),
+              );
               if (newPrice != null) {
                 try {
                   saleVm.changeProductPrice(item, newPrice);
@@ -543,32 +561,51 @@ class CartPage extends StatelessWidget {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (dialogContext) =>
-          const Center(child: CircularProgressIndicator()),
+      builder: (_) => const Center(child: CircularProgressIndicator()),
     );
 
     try {
-      final pdfFile = await PdfService.generate(saleVm);
-      if (context.mounted) Navigator.pop(context);
+      final sale = await saleVm.finishSale();
+
+      final items = await saleVm.getLastSaleItems(sale['id']);
+
+      final data = PdfReceiptData(
+        sale: Map<String, dynamic>.from(sale),
+        company: Map<String, dynamic>.from(sale['company'] ?? {}),
+        customer: sale['customer'] == null
+            ? null
+            : Map<String, dynamic>.from(sale['customer']),
+        items: items.map((item) => Map<String, dynamic>.from(item)).toList(),
+      );
+
+      final pdfFile = await PdfService.generateReceipt(data);
+
+      if (context.mounted) {
+        Navigator.pop(context); // fecha loading
+      }
 
       await Share.shareXFiles([
         XFile(pdfFile.path),
       ], text: 'Comprovante da venda');
-      await saleVm.finishSale();
 
       if (context.mounted) {
-        await context.read<HomeSearchViewmodel>().loadProduct();
+        await context.read<HomeSearchViewmodel>().refreshProducts();
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Venda finalizada!"),
             backgroundColor: Colors.green,
+            content: Text("Venda finalizada com sucesso!"),
           ),
         );
 
         Navigator.pop(context);
       }
     } catch (e) {
-      _showErrorSnackBar(context, "Erro: $e");
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      _showErrorSnackBar(context, e);
     }
   }
 }

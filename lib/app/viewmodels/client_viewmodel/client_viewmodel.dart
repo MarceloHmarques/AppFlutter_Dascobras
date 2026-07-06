@@ -51,8 +51,8 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> addCustomer({
     required String name,
-    String? tradeName, // 🛠️ Adicionado opcional
-    String? routeId,   // 🛠️ Adicionado opcional
+    String? tradeName, 
+    String? routeId,   
     required String birthDate,
     required String phone,
     required String email,
@@ -75,10 +75,10 @@ class ClientViewModel extends ChangeNotifier {
 
       final companyId = await _getCompanyId();
       await supabase.from('customer').insert({
-        'company_id': companyId, // 🛠️ Correção: Vinculando o cliente à empresa logada
+        'company_id': companyId, 
         'name': name,
-        'trade_name': tradeName, // 🛠️ Coluna mapeada
-        'route_id': routeId,     // 🛠️ Coluna mapeada
+        'trade_name': tradeName, 
+        'route_id': routeId,     
         'birth_date': formattedDate,
         'phone': phone,
         'email': email,

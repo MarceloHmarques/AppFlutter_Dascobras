@@ -8,6 +8,7 @@ import 'package:DasCobras/app/service/validation_service/personal_validation.dar
 import 'package:DasCobras/app/service/validation_service/address_validation.dart';
 import 'package:DasCobras/app/service/validation_service/mask.dart';
 import 'package:DasCobras/app/service/validation_service/personal%20_data_validation.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class EditClientDialog extends StatefulWidget {
   final CustomerModel client;
@@ -30,51 +31,67 @@ class _EditClientDialogState extends State<EditClientDialog> {
   late TextEditingController neighborhoodController;
   late TextEditingController cityController;
   late TextEditingController stateController;
+  late TextEditingController tradeNameController;
 
   final _formKey = GlobalKey<FormState>();
   bool loading = false;
-
   String? errorMessage;
   String customerType = 'PF';
   String? selectedState;
-  @override
+
+  String? selectedRouteId;
+  List<Map<String, dynamic>> routesList = [];
+
   void initState() {
     super.initState();
+
+    selectedRouteId = widget.client.route; 
+    _fetchRoutes();
+
     final type = widget.client.customerType.trim().toUpperCase();
-
     customerType = type == 'PJ' ? 'PJ' : 'PF';
-
+    
     nameController = TextEditingController(text: widget.client.name);
     cpfController = TextEditingController(text: widget.client.cpforcnpj);
     birthDateController = TextEditingController(text: widget.client.birthDate);
     phoneController = TextEditingController(text: widget.client.phone);
-    emailController = TextEditingController(text: widget.client.email);
-
+    emailController = TextEditingController(text: widget.client.email ?? '');
     addressController = TextEditingController(text: widget.client.address);
-
-    houseNumberController = TextEditingController(
-      text: widget.client.houseNumber,
-    );
-
+    houseNumberController = TextEditingController(text: widget.client.houseNumber);
     cepController = TextEditingController(text: widget.client.cep);
-
-    neighborhoodController = TextEditingController(
-      text: widget.client.neighborhood,
-    );
-
+    neighborhoodController = TextEditingController(text: widget.client.neighborhood);
     cityController = TextEditingController(text: widget.client.city);
     stateController = TextEditingController(text: widget.client.state);
+    tradeNameController = TextEditingController(text: widget.client.tradeName ?? '');
     selectedState = widget.client.state;
+  }
+
+  Future<void> _fetchRoutes() async {
+    try {
+      final response = await Supabase.instance.client
+          .from('route')
+          .select('id, name')
+          .eq('is_active', true);
+      setState(() {
+        routesList = List<Map<String, dynamic>>.from(response);
+      });
+    } catch (e) {
+      debugPrint("Erro ao carregar rotas: $e");
+    }
   }
 
   Future<void> updateCustomer() async {
     try {
       setState(() => loading = true);
 
+      final emailValue = emailController.text.trim().isEmpty ? null : emailController.text.trim();
+      final birthDateValue = birthDateController.text.trim().isEmpty ? null : birthDateController.text.trim();
+
       await context.read<ClientViewModel>().updateCustomer(
         id: widget.client.id.toString(), // 🛠️ Convertido nativamente para String
         name: nameController.text,
-        birthDate: birthDateController.text,
+        tradeName: tradeNameController.text.trim(),
+        birthDate: birthDateValue ?? '',
         phone: phoneController.text,
         email: emailController.text,
         customerType: customerType,
@@ -85,8 +102,10 @@ class _EditClientDialogState extends State<EditClientDialog> {
         cep: cepController.text,
         houseNumber: houseNumberController.text,
         address: addressController.text,
+        routeId: selectedRouteId,
+        
       );
-
+    
       if (mounted) {
         Navigator.pop(context);
 
@@ -140,33 +159,31 @@ class _EditClientDialogState extends State<EditClientDialog> {
       child: SingleChildScrollView(
         child: Container(
           padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF0D3F87), width: 2),
-          ),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFF0D3F87), width: 2)),
           child: Form(
             key: _formKey,
             child: Column(
               children: [
-                const Text(
-                  "Editar Cliente",
-                  style: TextStyle(
-                    fontSize: 28,
-                    color: Color(0xFF0D3F87),
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
+                const Text("Editar Cliente", style: TextStyle(fontSize: 28, color: Color(0xFF0D3F87), fontWeight: FontWeight.bold)),
                 const SizedBox(height: 20),
 
-                buildField(
-                  "Nome",
-                  nameController,
-                  validator: (value) => PersonalDataValidation.name(value),
-                  keyboardType: TextInputType.name,
-                ),
+                buildField("Nome", nameController, validator: (value) => PersonalDataValidation.name(value)),
 
+                buildField("Nome Fantasia (Opcional)", tradeNameController),
+
+                // Dropdown de Rotas
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedRouteId,
+                    decoration: InputDecoration(labelText: 'Selecione a Rota', border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+                    items: routesList.map((route) => DropdownMenuItem<String>(value: route['id'].toString(), child: Text(route['name'].toString()))).toList(),
+                    onChanged: (value) => setState(() => selectedRouteId = value),
+                    validator: (value) => value == null ? 'Selecione uma rota' : null,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                
                 DropdownButtonFormField<String>(
                   value: customerType,
                   decoration: InputDecoration(
@@ -223,27 +240,30 @@ class _EditClientDialogState extends State<EditClientDialog> {
                 ),
 
                 buildField(
-                  "Data de nascimento",
-                  birthDateController,
-                  readOnly: true,
+                "Data de nascimento (Opcional)",
+                birthDateController,
+                readOnly: true,
+                 suffixIcon: const Icon(Icons.calendar_today),
+                 onTap: () async {
+               final DateTime? date = await showDatePicker(
+                   context: context,
+                  initialDate: DateTime.now(), 
+                 firstDate: DateTime(1900),
+              lastDate: DateTime.now(),
+             );
 
-                  suffixIcon: const Icon(Icons.calendar_today),
-                  onTap: () async {
-                    final DateTime? date = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime(2000),
-                      firstDate: DateTime(1900),
-                      lastDate: DateTime.now(),
-                    );
-
-                    if (date != null) {
-                      setState(() {
-                        birthDateController.text =
-                            '${date.day}/${date.month}/${date.year}';
-                      });
-                    }
+                if (date != null) {
+                 setState(() {
+                 birthDateController.text = '${date.day}/${date.month}/${date.year}';
+                 });
+                }
+               },
+              validator: (value) {
+                if (value != null && value.isNotEmpty) {
+                return PersonalDataValidation.birth(value);
+                }
+                return null; 
                   },
-                  validator: (value) => PersonalDataValidation.birth(value),
                 ),
 
                 buildField(
@@ -254,12 +274,10 @@ class _EditClientDialogState extends State<EditClientDialog> {
                   validator: (value) => PersonalDataValidation.number(value),
                 ),
 
-                buildField(
-                  "Email",
-                  emailController,
-                  validator: (value) => PersonalDataValidation.email(value),
-                  keyboardType: TextInputType.emailAddress,
-                ),
+                buildField("Email (Opcional)", emailController, keyboardType: TextInputType.emailAddress, validator: (value) {
+                  if (value != null && value.isNotEmpty) return PersonalDataValidation.email(value);
+                  return null;
+                }),
 
                 buildField(
                   "Rua",

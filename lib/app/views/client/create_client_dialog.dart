@@ -73,7 +73,6 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
           : birthDateController.text.trim();
           final emailValue = emailController.text.trim().isEmpty ? null : emailController.text.trim();
 
-      // Se seu ViewModel ainda não aceita tradeName e routeId, adicione no método addCustomer dele!
       await context.read<ClientViewModel>().addCustomer(
         name: nameController.text.trim(),
         birthDate: birthDateValue,
@@ -87,8 +86,8 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
         cep: cepController.text.trim(),
         houseNumber: houseNumberController.text.trim(),
         address: addressController.text.trim(),
-        // tradeName: tradeNameController.text.trim(), // Descomente quando ajustar o ViewModel
-        // routeId: selectedRouteId,                  // Descomente quando ajustar o ViewModel
+        tradeName: tradeNameController.text.trim(), 
+        routeId: selectedRouteId,                  
       );
 
       if (!mounted) return;
@@ -255,7 +254,6 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                     }
                   },
                 ),
-email: emailValue ?? '',
                 buildField(
                   "Telefone",
                   phoneController,

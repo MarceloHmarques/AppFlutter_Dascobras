@@ -26,6 +26,8 @@ class SaleViewModel extends ChangeNotifier {
   CustomerModel? customer;
   List<CartItem> cart = [];
 
+  bool finishingSale = false;
+
   Future<String> _getCompanyId() async {
     return await authSession.getCompanyId();
   }
@@ -141,11 +143,14 @@ class SaleViewModel extends ChangeNotifier {
     return value;
   }
 
-  Future<void> saveSale({
-    required String paymentMethod,
+  Future<Map<String, dynamic>> saveSale({
     required String statusOrder,
     required String userId,
   }) async {
+    if (finishingSale) {
+      throw Exception("A venda já está sendo finalizada.");
+    }
+
     if (customer == null) {
       throw Exception("Selecione um cliente.");
     }
@@ -154,68 +159,119 @@ class SaleViewModel extends ChangeNotifier {
       throw Exception("Carrinho vazio.");
     }
 
-    final companyId = await _getCompanyId();
+    try {
+      finishingSale = true;
+      notifyListeners();
 
-    final sale = await supabase
-        .from("sale")
-        .insert({
-          "customer_id": customer!.id,
-          "total": total,
-          "status_order": statusOrder,
-          "payment_method": paymentMethod,
-          "user_id": userId,
-          "company_id": companyId,
-        })
-        .select()
-        .single();
+      final companyId = await _getCompanyId();
+      final saleResponse = await supabase
+          .from("sale")
+          .insert({
+            "customer_id": customer!.id,
+            "total": total,
+            "status_order": statusOrder,
+            "payment_method": null,
+            "user_id": userId,
+            "company_id": companyId,
+          })
+          .select('''
+      *,
+      customer:customer_id (
+        id,
+        name,
+        cpforcnpj,
+        phone,
+        state_,
+        city,
+        neighborhood,
+        cep,
+        house_number,
+        address
+      )
+    ''')
+          .single();
 
-    final int saleId = sale["id"];
+      final sale = Map<String, dynamic>.from(saleResponse);
 
-    for (var item in cart) {
-      await supabase.from("sale_item").insert({
-        "sale_id": saleId,
-        "product_id": item.product.id,
-        "quantity": item.quantity,
-        "unit_price": item.unitPrice,
-        "subtotal": item.subtotal,
-        "commission_paid": item.product.commissionValue,
-      });
+      final companyResponse = await supabase
+          .from('company')
+          .select()
+          .eq('id', companyId);
 
-      await supabase
-          .from("product")
-          .update({"stock": item.product.stock - item.quantity})
-          .eq("id", item.product.id)
-          .eq("company_id", companyId);
+      final companyList = List.from(
+        companyResponse,
+      ).map((e) => Map<String, dynamic>.from(e)).toList();
+
+      if (companyList.isEmpty) {
+        throw Exception('Empresa não encontrada para gerar o PDF.');
+      }
+
+      sale['company'] = companyList.first;
+
+      debugPrint('COMPANY PDF: ${sale['company']}');
+
+      final int saleId = sale["id"];
+
+      for (var item in cart) {
+        await supabase.from("sale_item").insert({
+          "sale_id": saleId,
+          "product_id": item.product.id,
+          "quantity": item.quantity,
+          "unit_price": item.unitPrice,
+          "subtotal": item.subtotal,
+          "commission_paid": item.product.commissionValue,
+        });
+
+        await supabase
+            .from("product")
+            .update({"stock": item.product.stock - item.quantity})
+            .eq("id", item.product.id)
+            .eq("company_id", companyId);
+      }
+
+      cart.clear();
+      customer = null;
+      notifyListeners();
+
+      return sale;
+    } finally {
+      finishingSale = false;
+      notifyListeners();
     }
+  }
 
-    cart.clear();
-    customer = null;
-    notifyListeners();
+  Future<List<Map<String, dynamic>>> getLastSaleItems(int saleId) async {
+    final response = await supabase
+        .from('sale_item')
+        .select('''
+        *,
+        product:product_id (
+          id,
+          name,
+          brand
+        )
+      ''')
+        .eq('sale_id', saleId);
+
+    return List.from(
+      response,
+    ).map((item) => Map<String, dynamic>.from(item)).toList();
+  }
+
+  Future<Map<String, dynamic>> finishSale() async {
+    try {
+      return await saveSale(
+        statusOrder: "Concluido",
+        userId: Supabase.instance.client.auth.currentUser?.id ?? "",
+      );
+    } catch (e) {
+      throw Exception('Erro ao finalizar venda: $e');
+    }
   }
 
   void cancelSale() {
     cart.clear();
     customer = null;
     notifyListeners();
-  }
-
-  Future<void> finishSale() async {
-    if (customer == null) {
-      throw Exception('Selecione um cliente.');
-    }
-
-    if (cart.isEmpty) {
-      throw Exception('Carrinho vazio.');
-    }
-
-    try {
-      await saveSale(
-        paymentMethod: "dinheiro",
-        statusOrder: "CONCLUIDA",
-        userId: Supabase.instance.client.auth.currentUser?.id ?? "",
-      );
-    } catch (e) {
-      throw Exception('Erro ao finalizar venda: $e');
-    }
   }
 }

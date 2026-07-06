@@ -341,6 +341,8 @@ class _EditProductDialogState extends State<EditProductDialog> {
                   ),
                 ),
 
+                const SizedBox(height: 15),
+
                 SizedBox(
                   width: double.infinity,
                   height: 55,

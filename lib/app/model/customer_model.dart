@@ -39,8 +39,8 @@ class CustomerModel {
     return CustomerModel(
       id: map['id'],
       name: map['name'] ?? '',
-      tradeName: map['trade_name']?.toString(), 
-      route: map['route']?.toString(),           
+      tradeName: map['trade_name']?.toString(),
+      route: map['route_id']?.toString(),           
       birthDate: map['birth_date'] != null
           ? DateFormat('dd/MM/yyyy').format(DateTime.parse(map['birth_date']))
           : '',

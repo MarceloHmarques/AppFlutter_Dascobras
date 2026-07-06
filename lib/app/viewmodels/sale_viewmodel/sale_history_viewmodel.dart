@@ -21,7 +21,27 @@ class SaleHistoryViewModel extends ChangeNotifier {
       customer:customer_id (
         id,
         name,
-        cpforcnpj
+        cpforcnpj,
+        phone,
+        state_,
+        city,
+        neighborhood,
+        cep,
+        house_number,
+        address
+      ),
+      company:company_id (
+        id,
+        name,
+        cnpj,
+        phone,
+        email,
+        state_,
+        city,
+        neighborhood,
+        cep,
+        house_number,
+        address
       )
     ''')
           .eq('company_id', companyId)
@@ -126,28 +146,25 @@ class SaleHistoryViewModel extends ChangeNotifier {
   }
 
   Future<List<Map<String, dynamic>>> getSaleItems(int saleId) async {
-    try {
-      final response = await supabase
-          .from('sale_item')
-          .select('''
-          *,
-          product:product_id (
-            id,
-            name
-          )
-        ''')
-          .eq('sale_id', saleId);
+    final response = await supabase
+        .from('sale_item')
+        .select('''
+        *,
+        product:product_id (
+          id,
+          name,
+          brand,
+          unit_type
+        )
+      ''')
+        .eq('sale_id', saleId);
 
-      final items = List<Map<String, dynamic>>.from(response);
+    final items = List<Map<String, dynamic>>.from(response);
 
-      for (var item in items) {
-        item['product_name'] = item['product']?['name'] ?? 'Produto';
-      }
-
-      return items;
-    } catch (e) {
-      debugPrint('Erro ao carregar itens da venda: $e');
-      return [];
+    for (var item in items) {
+      item['product_name'] = item['product']?['name'] ?? 'Produto';
     }
+
+    return items;
   }
 }
