@@ -20,7 +20,7 @@ class ClientViewModel extends ChangeNotifier {
 
       final response = await supabase
           .from('customer')
-          .select()
+          .select('*, route(name)')
           .eq('is_active', true)
           .eq('company_id', companyId)
           .order('name');
@@ -51,8 +51,8 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> addCustomer({
     required String name,
-    String? tradeName, 
-    String? routeId,   
+    String? tradeName,
+    String? routeId,
     required String birthDate,
     required String phone,
     required String email,
@@ -75,10 +75,10 @@ class ClientViewModel extends ChangeNotifier {
 
       final companyId = await _getCompanyId();
       await supabase.from('customer').insert({
-        'company_id': companyId, 
+        'company_id': companyId,
         'name': name,
-        'trade_name': tradeName, 
-        'route_id': routeId,     
+        'trade_name': tradeName,
+        'route_id': routeId,
         'birth_date': formattedDate,
         'phone': phone,
         'email': email,
@@ -101,7 +101,8 @@ class ClientViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteCustomer(String id) async { // 🛠️ Mudado int para String para casar com o Model
+  Future<void> deleteCustomer(String id) async {
+    // 🛠️ Mudado int para String para casar com o Model
     try {
       final companyId = await _getCompanyId();
 
@@ -122,7 +123,7 @@ class ClientViewModel extends ChangeNotifier {
     required String id, // 🛠️ Mudado int para String para casar com o Model
     required String name,
     String? tradeName, // 🛠️ Adicionado opcional
-    String? routeId,   // 🛠️ Adicionado opcional
+    String? routeId, // 🛠️ Adicionado opcional
     required String birthDate,
     required String phone,
     required String email,
@@ -150,7 +151,7 @@ class ClientViewModel extends ChangeNotifier {
         .update({
           'name': name,
           'trade_name': tradeName, // 🛠️ Atualização da coluna ativa
-          'route_id': routeId,     // 🛠️ Atualização da coluna ativa
+          'route_id': routeId, // 🛠️ Atualização da coluna ativa
           'birth_date': formattedDate,
           'phone': phone,
           'email': email,

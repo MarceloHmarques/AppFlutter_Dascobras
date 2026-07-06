@@ -61,6 +61,7 @@ class ViewClientDialog extends StatelessWidget {
 
               buildInfo("Nome", client.name),
               buildInfo("CPF/CNPJ", client.cpforcnpj),
+              buildInfo("Rota", client.route ?? "Sem rota"),
               buildInfo("Data de Nascimento", client.birthDate),
               buildInfo("Telefone", client.phone),
               buildInfo("E-mail", client.email),

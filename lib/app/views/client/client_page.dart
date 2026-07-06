@@ -159,8 +159,8 @@ class _ClientPageState extends State<ClientPage> {
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 🗺️ Botão de Rotas (Novo) - Configurado para abrir o modal de criação de rotas
-          FloatingActionButton.extended(
+          // 🗺️ Botão de Rotas
+          FloatingActionButton(
             heroTag: 'btn_rotas',
             backgroundColor: const Color(0xFF0D3F87),
             onPressed: () {
@@ -169,17 +169,13 @@ class _ClientPageState extends State<ClientPage> {
                 builder: (context) => const CreateRouteDialog(),
               );
             },
-            icon: const Icon(Icons.map_outlined, color: Colors.white),
-            label: const Text(
-              "Gerenciar Rotas", 
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-            ),
+            child: const Icon(Icons.map_outlined, color: Colors.white),
           ),
-          
+
           const SizedBox(height: 12),
 
           // 👤 Botão de Adicionar Cliente
-          FloatingActionButton.extended(
+          FloatingActionButton(
             heroTag: 'btn_add_cliente',
             backgroundColor: const Color(0xFF0D3F87),
             onPressed: () {
@@ -188,15 +184,13 @@ class _ClientPageState extends State<ClientPage> {
                 builder: (context) => const CreateClientDialog(),
               );
             },
-            icon: const Icon(Icons.person_add_alt_1_outlined, color: Colors.white),
-            label: const Text(
-              "Adicionar Cliente", 
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            child: const Icon(
+              Icons.person_add_alt_1_outlined,
+              color: Colors.white,
             ),
           ),
         ],
       ),
-
       bottomNavigationBar: CustomBottomNav(
         currentIndex: 1,
         onTap: (index) {

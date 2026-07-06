@@ -17,7 +17,9 @@ class ClientCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 🛠️ Tratamento para verificar se existe Nome Fantasia (trade_name) preenchido
-    final hasTradeName = client.tradeName != null && client.tradeName.toString().trim().isNotEmpty;
+    final hasTradeName =
+        client.tradeName != null &&
+        client.tradeName.toString().trim().isNotEmpty;
     // 🛠️ Tratamento para buscar a Rota (caso ainda não exista no objeto, evita quebrar o app)
     final routeName = client.route ?? 'Sem Rota Definida';
 
@@ -55,10 +57,13 @@ class ClientCard extends StatelessWidget {
               children: [
                 // 📋 Exibe o Nome Fantasia em destaque se existir, caso contrário exibe o Razão Social / Nome
                 Text(
-                  hasTradeName ? client.tradeName.toString().toUpperCase() : client.name,
+                  hasTradeName
+                      ? client.tradeName.toString().toUpperCase()
+                      : client.name,
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
+                    color: Color(0xFF0D3F87),
                   ),
                 ),
 
@@ -67,11 +72,11 @@ class ClientCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
-                      "Razão/Nome: ${client.name}",
+                      "Nome: ${client.name}",
                       style: TextStyle(
                         fontSize: 13,
-                        color: Colors.grey.shade600,
-                        fontStyle: FontStyle.italic,
+                        color: const Color.fromARGB(255, 0, 0, 0),
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -101,7 +106,9 @@ class ClientCard extends StatelessWidget {
                         const Text(
                           "ROTA",
                           style: TextStyle(
-                            color: Colors.deepOrange, // 🎨 Cor em destaque para a rota
+                            color: Color(
+                              0xFF0D3F87,
+                            ), // 🎨 Cor em destaque para a rota
                             fontWeight: FontWeight.w600,
                           ),
                         ),
