@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
 import 'package:DasCobras/app/service/pdf/pdf_service.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:flutter/foundation.dart';
 
 class CarregamentoPage extends StatelessWidget {
   const CarregamentoPage({super.key});
@@ -18,7 +19,9 @@ class CarregamentoPage extends StatelessWidget {
       body: Consumer<CarregamentoViewModel>(
         builder: (context, vm, _) {
           if (vm.itensAcumulados.isEmpty) {
-            return const Center(child: Text('Nenhum item adicionado ao carregamento.'));
+            return const Center(
+              child: Text('Nenhum item adicionado ao carregamento.'),
+            );
           }
 
           final listaItens = vm.itensAcumulados.values.toList();
@@ -36,7 +39,10 @@ class CarregamentoPage extends StatelessWidget {
                         backgroundColor: const Color(0xFF0D3F87),
                         child: Text(
                           '${item['quantity']}',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     );
@@ -70,9 +76,13 @@ class CarregamentoPage extends StatelessWidget {
                         icon: const Icon(Icons.picture_as_pdf),
                         label: const Text('Gerar PDF'),
                         onPressed: () async {
-                          final file = await PdfService.generatePickingList(vm.itensAcumulados);
-                          if (!context.mounted) return;
-                          OpenFilex.open(file.path);
+                          final file = await PdfService.generatePickingList(
+                            vm.itensAcumulados.values.toList(),
+                          );
+
+                          if (!kIsWeb) {
+                            OpenFilex.open(file.path);
+                          }
                         },
                       ),
                     ),

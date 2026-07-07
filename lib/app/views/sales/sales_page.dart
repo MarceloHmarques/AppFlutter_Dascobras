@@ -21,8 +21,7 @@ import 'package:DasCobras/app/views/widgets/shared/category_filter.dart';
 import 'package:DasCobras/app/views/widgets/shared/product_card.dart';
 import 'package:DasCobras/app/views/widgets/sales/product_sale_actions.dart';
 import 'package:DasCobras/app/views/widgets/sales/sales_floating_buttons.dart';
-
-import 'package:provider/provider.dart';
+import 'package:DasCobras/app/views/sales/carregamento_page.dart';
 
 import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
 
@@ -104,7 +103,12 @@ class _SalesPageState extends State<SalesPage> {
                     ? Column(
                         key: const ValueKey('header-visible'),
                         children: [
-                          const LogoHeader(),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: Row(
+                              children: [const Expanded(child: LogoHeader())],
+                            ),
+                          ),
 
                           const SizedBox(height: 15),
 
@@ -219,7 +223,7 @@ class _SalesPageState extends State<SalesPage> {
 
                   return ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 100),
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 170),
                     itemCount: service.filteredProducts.length,
                     itemBuilder: (context, index) {
                       final product = service.filteredProducts[index];
@@ -237,16 +241,26 @@ class _SalesPageState extends State<SalesPage> {
         ),
       ),
 
-      floatingActionButton: Consumer<SaleViewModel>(
-        builder: (context, saleVm, _) {
+      floatingActionButton: Consumer2<SaleViewModel, CarregamentoViewModel>(
+        builder: (context, saleVm, carregamentoVm, _) {
           return SalesFloatingButtons(
             cartCount: saleVm.cart.length,
+            loadingCount: carregamentoVm.itensAcumulados.length,
+
             onHistory: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const SalesHistoryPage()),
               );
             },
+
+            onLoading: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const CarregamentoPage()),
+              );
+            },
+
             onCart: () async {
               await Navigator.push(
                 context,
@@ -260,7 +274,6 @@ class _SalesPageState extends State<SalesPage> {
           );
         },
       ),
-
       bottomNavigationBar: CustomBottomNav(
         currentIndex: 2, // Tela de Venda
         onTap: (index) {
@@ -273,18 +286,22 @@ class _SalesPageState extends State<SalesPage> {
               break;
 
             case 1:
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (_) => ChangeNotifierProvider.value(
-        // Aqui está o segredo: pegamos o provider que já existe
-        // e passamos para a próxima tela
-        value: Provider.of<CarregamentoViewModel>(context, listen: false),
-        child: const ClientPage(), // A página para onde você está indo
-      ),
-    ),
-  );
-  break;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ChangeNotifierProvider.value(
+                    // Aqui está o segredo: pegamos o provider que já existe
+                    // e passamos para a próxima tela
+                    value: Provider.of<CarregamentoViewModel>(
+                      context,
+                      listen: false,
+                    ),
+                    child:
+                        const ClientPage(), // A página para onde você está indo
+                  ),
+                ),
+              );
+              break;
 
             case 2:
               break; // Já está na tela de venda
