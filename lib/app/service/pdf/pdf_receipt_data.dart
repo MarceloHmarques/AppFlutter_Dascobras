@@ -26,6 +26,7 @@ class PdfReceiptData {
   String get companyLogoUrl => company['image'] ?? '';
 
   String get customerName => customer?['name'] ?? '';
+  String get customerTradeName => customer?['trade_name'] ?? '';
   String get customerDocument => customer?['cpforcnpj'] ?? '';
   String get customerAddress => customer?['address'] ?? '';
   String get customerNeighborhood => customer?['neighborhood'] ?? '';

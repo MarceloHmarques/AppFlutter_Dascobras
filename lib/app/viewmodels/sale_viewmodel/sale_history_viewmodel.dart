@@ -21,6 +21,7 @@ class SaleHistoryViewModel extends ChangeNotifier {
       customer:customer_id (
         id,
         name,
+        trade_name,
         cpforcnpj,
         phone,
         state_,
@@ -33,7 +34,7 @@ class SaleHistoryViewModel extends ChangeNotifier {
       company:company_id (
         id,
         name,
-        cnpj,
+        cnpj_or_cpf,
         phone,
         email,
         state_,

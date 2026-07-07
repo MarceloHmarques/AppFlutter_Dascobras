@@ -118,10 +118,17 @@ class PdfService {
   }
 
   static pw.Widget _customerInfo(PdfReceiptData data) {
-    return pw.Column(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        _bold('CLIENTE: ${data.customerName}'.toUpperCase(), 9.5),
+
+        final tradeName = data.customerTradeName; 
+  
+  final title = (tradeName != null && tradeName.trim().isNotEmpty) 
+      ? '${data.customerName} ($tradeName)' 
+      : data.customerName;
+
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      _bold('CLIENTE: ${title.toUpperCase()}', 9.5),
         pw.SizedBox(height: 3),
 
         pw.Row(
@@ -220,35 +227,39 @@ class PdfService {
   }
 
   static pw.Widget _totals(PdfReceiptData data) {
-    return pw.Row(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Expanded(
-          flex: 6,
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              _bold('Observações:', 8.5),
-              pw.SizedBox(height: 10),
-              _bold('Obrigado pela preferência!', 9.5),
-              _text('Volte sempre!', 8.5),
-            ],
-          ),
+final totalQuantity = data.items.fold<num>(0, (sum, item) {
+    return sum + ((item['quantity'] as num?) ?? 0);
+  });
+
+  return pw.Row(
+    children: [
+      pw.Expanded(
+        flex: 6,
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            _bold('Observações:', 8.5),
+            pw.SizedBox(height: 10),
+            _bold('Obrigado pela preferência!', 9.5),
+            _text('Volte sempre!', 8.5),
+          ],
         ),
-        pw.Expanded(
-          flex: 5,
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.end,
-            children: [
-              _bold('TOTALIZAÇÃO: ${_currency.format(data.total)}', 9),
-              pw.SizedBox(height: 2),
-              _bold('QUANT. DE ITENS: ${data.items.length}', 9),
-            ],
-          ),
+      ),
+      pw.Expanded(
+        flex: 5,
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.end,
+          children: [
+            _bold('TOTALIZAÇÃO: ${_currency.format(data.total)}', 9),
+            pw.SizedBox(height: 2),
+            _bold('QUANT. DE ITENS: $totalQuantity', 9), // Exibe a soma correta
+          ],
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
+
 
   static pw.Widget _footer() {
     return pw.Column(

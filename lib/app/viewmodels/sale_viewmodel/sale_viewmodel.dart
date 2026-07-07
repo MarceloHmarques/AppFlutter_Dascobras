@@ -179,6 +179,7 @@ class SaleViewModel extends ChangeNotifier {
       customer:customer_id (
         id,
         name,
+        trade_name,
         cpforcnpj,
         phone,
         state_,
