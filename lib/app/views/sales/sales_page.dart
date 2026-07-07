@@ -22,6 +22,10 @@ import 'package:DasCobras/app/views/widgets/shared/product_card.dart';
 import 'package:DasCobras/app/views/widgets/sales/product_sale_actions.dart';
 import 'package:DasCobras/app/views/widgets/sales/sales_floating_buttons.dart';
 
+import 'package:provider/provider.dart';
+
+import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
+
 class SalesPage extends StatefulWidget {
   const SalesPage({super.key});
 
@@ -269,11 +273,18 @@ class _SalesPageState extends State<SalesPage> {
               break;
 
             case 1:
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const ClientPage()),
-              );
-              break;
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChangeNotifierProvider.value(
+        // Aqui está o segredo: pegamos o provider que já existe
+        // e passamos para a próxima tela
+        value: Provider.of<CarregamentoViewModel>(context, listen: false),
+        child: const ClientPage(), // A página para onde você está indo
+      ),
+    ),
+  );
+  break;
 
             case 2:
               break; // Já está na tela de venda

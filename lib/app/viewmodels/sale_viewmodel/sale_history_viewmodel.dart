@@ -10,6 +10,14 @@ class SaleHistoryViewModel extends ChangeNotifier {
 
   String _searchText = '';
 
+  Future<List<Map<String, dynamic>>> getItemsDaVenda(int saleId) async {
+  final response = await supabase
+      .from('sale_item')
+      .select('product_id, quantity, product(name)')
+      .eq('sale_id', saleId);
+  return List<Map<String, dynamic>>.from(response);
+}
+
   Future<void> loadSales() async {
     try {
       final companyId = await AuthSessionService().getCompanyId();
@@ -61,6 +69,27 @@ class SaleHistoryViewModel extends ChangeNotifier {
     _searchText = value;
     _applyFilters();
   }
+
+List<Map<String, dynamic>> rotasDisponiveis = [];
+
+  Future<void> loadRotas() async {
+  final response = await supabase.from('route').select('id, name').eq('is_active', true);
+  rotasDisponiveis = List<Map<String, dynamic>>.from(response);
+  notifyListeners();
+}
+
+void filterByRoute(int? routeId) {
+  if (routeId == null) {
+    filteredSales = sales;
+  } else {
+    // Filtra as vendas cujo cliente tem o route_id igual ao selecionado
+    filteredSales = sales.where((sale) => 
+      sale['customer'] != null && 
+      sale['customer']['route_id'] == routeId
+    ).toList();
+  }
+  notifyListeners();
+}
 
   void filterToday() {
     final today = DateTime.now();

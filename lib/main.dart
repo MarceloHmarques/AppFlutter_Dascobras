@@ -11,6 +11,8 @@ import 'package:DasCobras/app/viewmodels/home_viewmodel/home_search_viewmodel.da
 import 'package:DasCobras/app/viewmodels/reports_viewmodel/reports_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/client_viewmodel/client_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/sale_viewmodel/sale_viewmodel.dart';
+import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,6 +36,8 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ReportsViewModel()),
 
         ChangeNotifierProvider(create: (_) => SaleHistoryViewModel()),
+
+        ChangeNotifierProvider(create: (_) => CarregamentoViewModel()), // OBRIGATÓRIO ESTAR AQUI
       ],
       child: const MyApp(),
     ),
