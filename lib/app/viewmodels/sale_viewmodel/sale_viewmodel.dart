@@ -206,10 +206,21 @@ class SaleViewModel extends ChangeNotifier {
       if (companyList.isEmpty) {
         throw Exception('Empresa não encontrada para gerar o PDF.');
       }
-
       sale['company'] = companyList.first;
 
+      // Busca o nome do vendedor da tabela company_user
+      final companyUser = await supabase
+          .from('company_user')
+          .select('name')
+          .eq('company_id', companyId)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      // Adiciona o vendedor na venda para o PDF
+      sale['vendedor'] = {'name': companyUser?['name'] ?? 'Não informado'};
+
       debugPrint('COMPANY PDF: ${sale['company']}');
+      debugPrint('VENDEDOR PDF: ${sale['vendedor']}');
 
       final int saleId = sale["id"];
 

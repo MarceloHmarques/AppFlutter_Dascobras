@@ -1,9 +1,14 @@
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
-import 'package:DasCobras/app/service/pdf/pdf_service.dart';
-import 'package:open_filex/open_filex.dart';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
+
+import 'package:DasCobras/app/service/pdf/loading_sheet_pdf_service.dart';
+import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
 
 class CarregamentoPage extends StatelessWidget {
   const CarregamentoPage({super.key});
@@ -76,11 +81,36 @@ class CarregamentoPage extends StatelessWidget {
                         icon: const Icon(Icons.picture_as_pdf),
                         label: const Text('Gerar PDF'),
                         onPressed: () async {
-                          final file = await PdfService.generatePickingList(
-                            vm.itensAcumulados.values.toList(),
-                          );
+                          final pdfBytes = await LoadingSheetPdfService()
+                              .generateLoadingSheet(
+                                companyName: 'Das Cobra Stock',
+                                routeName: 'Rota Principal',
+                                items: vm.itensAcumulados.values.map((item) {
+                                  return {
+                                    'product_id': item['product']['id'],
+                                    'product_name': item['product']['name'],
+                                    'brand':
+                                        item['product']['brand'] ?? 'Sem Marca',
+                                    'quantity': item['quantity'],
+                                  };
+                                }).toList(),
+                              );
 
-                          if (!kIsWeb) {
+                          if (kIsWeb) {
+                            await Printing.layoutPdf(
+                              onLayout: (_) async => pdfBytes,
+                              name: 'MapaCarregamento.pdf',
+                            );
+                          } else {
+                            final dir =
+                                await getApplicationDocumentsDirectory();
+
+                            final file = File(
+                              '${dir.path}/MapaCarregamento.pdf',
+                            );
+
+                            await file.writeAsBytes(pdfBytes);
+
                             OpenFilex.open(file.path);
                           }
                         },

@@ -55,7 +55,7 @@ class PdfReceiptData {
         '${date.year}';
   }
 
-String get sellerName {
+  String get sellerName {
     if (sale['vendedor'] != null) {
       if (sale['vendedor'] is Map) {
         return sale['vendedor']['name'] ?? 'Não informado';
@@ -63,6 +63,4 @@ String get sellerName {
     }
     return 'Não informado';
   }
-
-
 }

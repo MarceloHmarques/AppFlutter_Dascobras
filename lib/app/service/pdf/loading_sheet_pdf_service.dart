@@ -8,15 +8,18 @@ class LoadingSheetPdfService {
   Future<Uint8List> generateLoadingSheet({
     required String companyName,
     required String routeName,
-    required List<Map<String, dynamic>> items, 
+    required List<Map<String, dynamic>> items,
   }) async {
     final pdf = pw.Document();
-    final String currentDate = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+    final String currentDate = DateFormat(
+      'dd/MM/yyyy HH:mm',
+    ).format(DateTime.now());
 
     // Cálculos dos Totais do Rodapé
     final int totalRecords = items.length;
     final int totalItemsQuantity = items.fold<int>(
-      0, (sum, item) => sum + (item['quantity'] as int? ?? 0)
+      0,
+      (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
     );
 
     pdf.addPage(
@@ -31,19 +34,34 @@ class LoadingSheetPdfService {
             children: [
               pw.Text(
                 'LOJA: ${companyName.toUpperCase()} - MATRIZ',
-                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 11,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.SizedBox(height: 2),
               pw.Text(
                 'L3.2.2 LISTAGEM DE PRODUTOS PARA ENTREGA (MAPA DE CARREGAMENTO)',
-                style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                ),
               ),
               pw.SizedBox(height: 2),
               pw.Row(
-                main pw.MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                 children: [
-                  pw.Text('ROTA: ${routeName.toUpperCase()}', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
-                  pw.Text('EMISSÃO: $currentDate', style: pw.TextStyle(fontSize: 9)),
+                  pw.Text(
+                    'ROTA: ${routeName.toUpperCase()}',
+                    style: pw.TextStyle(
+                      fontSize: 9,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                  ),
+                  pw.Text(
+                    'EMISSÃO: $currentDate',
+                    style: pw.TextStyle(fontSize: 9),
+                  ),
                 ],
               ),
               pw.SizedBox(height: 4),
@@ -54,7 +72,7 @@ class LoadingSheetPdfService {
         },
         // Rodapé com numeração de páginas automático
         footer: (pw.Context context) {
-          return pw.Alignment(
+          return pw.Container(
             alignment: pw.Alignment.centerRight,
             child: pw.Text(
               'Página ${context.pageNumber} de ${context.pagesCount}',
@@ -68,13 +86,16 @@ class LoadingSheetPdfService {
             pw.Table(
               border: const pw.TableBorder(
                 bottom: pw.BorderSide(color: PdfColors.black, width: 0.5),
-                horizontalInside: pw.BorderSide(color: PdfColors.grey300, width: 0.5),
+                horizontalInside: pw.BorderSide(
+                  color: PdfColors.grey300,
+                  width: 0.5,
+                ),
               ),
               columnWidths: const {
-                0: pw.FlexColumnWidth(2),  // Código
-                1: pw.FlexColumnWidth(6),  // Produto
-                2: pw.FlexColumnWidth(3),  // Marca
-                3: pw.FlexColumnWidth(2),  // Quantidade
+                0: pw.FlexColumnWidth(2), // Código
+                1: pw.FlexColumnWidth(6), // Produto
+                2: pw.FlexColumnWidth(3), // Marca
+                3: pw.FlexColumnWidth(2), // Quantidade
               },
               children: [
                 // Linha de Cabeçalho da Tabela
@@ -84,7 +105,11 @@ class LoadingSheetPdfService {
                     _buildCell('CÓDIGO', isHeader: true),
                     _buildCell('PRODUTO', isHeader: true),
                     _buildCell('MARCA', isHeader: true),
-                    _buildCell('QUANT', isHeader: true, align: pw.TextAlign.right),
+                    _buildCell(
+                      'QUANT',
+                      isHeader: true,
+                      align: pw.TextAlign.right,
+                    ),
                   ],
                 ),
                 // Linhas dos Itens do Carregamento
@@ -92,9 +117,17 @@ class LoadingSheetPdfService {
                   return pw.TableRow(
                     children: [
                       _buildCell(item['product_id']?.toString() ?? '-'),
-                      _buildCell(item['product_name']?.toString().toUpperCase() ?? 'PRODUTO'),
-                      _buildCell(item['brand']?.toString().toUpperCase() ?? 'SEM MARCA'),
-                      _buildCell(item['quantity']?.toString() ?? '0', align: pw.TextAlign.right),
+                      _buildCell(
+                        item['product_name']?.toString().toUpperCase() ??
+                            'PRODUTO',
+                      ),
+                      _buildCell(
+                        item['brand']?.toString().toUpperCase() ?? 'SEM MARCA',
+                      ),
+                      _buildCell(
+                        item['quantity']?.toString() ?? '0',
+                        align: pw.TextAlign.right,
+                      ),
                     ],
                   );
                 }),
@@ -111,36 +144,51 @@ class LoadingSheetPdfService {
                 children: [
                   pw.Text(
                     'QUANTIDADE DE REGISTROS: $totalRecords',
-                    style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                    style: pw.TextStyle(
+                      fontSize: 10,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
                   ),
                   pw.SizedBox(height: 4),
                   pw.Row(
-                    main pw.MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
                         'SUB-TOTAL ROTA:',
-                        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                       pw.Text(
                         '$totalItemsQuantity UNIDADES',
-                        style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold),
+                        style: pw.TextStyle(
+                          fontSize: 10,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
                   pw.Padding(
                     padding: const pw.EdgeInsets.symmetric(vertical: 2),
-                    child: pw.Divider(thickness: 0.5, style: pw.BorderStyle.dashed),
+                    child: pw.Divider(thickness: 0.5),
                   ),
                   pw.Row(
-                    main pw.MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                     children: [
                       pw.Text(
                         'TOTAIS GERAIS:',
-                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                        style: pw.TextStyle(
+                          fontSize: 11,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                       pw.Text(
                         '$totalItemsQuantity ITENS',
-                        style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold),
+                        style: pw.TextStyle(
+                          fontSize: 11,
+                          fontWeight: pw.FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -156,7 +204,11 @@ class LoadingSheetPdfService {
   }
 
   // Helper para criar as células com espaçamento correto padrão de relatórios
-  static pw.Widget _buildCell(String text, {bool isHeader = false, pw.TextAlign align = pw.TextAlign.left}) {
+  static pw.Widget _buildCell(
+    String text, {
+    bool isHeader = false,
+    pw.TextAlign align = pw.TextAlign.left,
+  }) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 5, horizontal: 4),
       child: pw.Text(
