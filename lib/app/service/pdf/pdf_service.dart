@@ -73,6 +73,7 @@ class PdfService {
                   pw.SizedBox(height: 4),
                   _bold('PEDIDO: ${data.orderId}', 10),
                   _bold('DATA: $date', 10),
+                  _bold('VENDEDOR: ${data.sellerName.toUpperCase()}', 9),
                 ],
               ),
             ),

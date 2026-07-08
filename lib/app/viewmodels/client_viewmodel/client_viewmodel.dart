@@ -18,14 +18,22 @@ class ClientViewModel extends ChangeNotifier {
     try {
       final companyId = await _getCompanyId();
 
+      // CORRIGIDO: Removidas as aspas triplas duplicadas que quebravam o código
       final response = await supabase
           .from('customer')
-          .select()
+          .select('''
+            *,
+            route (
+              name
+            )
+          ''')
           .eq('is_active', true)
           .eq('company_id', companyId)
           .order('name');
 
-      customers = response
+      final rawCustomers = List<Map<String, dynamic>>.from(response);
+
+      customers = rawCustomers
           .map<CustomerModel>((e) => CustomerModel.fromMap(e))
           .toList();
 
@@ -33,7 +41,7 @@ class ClientViewModel extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Erro ao carregar clientes: ${e.toString()}");
     }
   }
 
@@ -42,12 +50,10 @@ class ClientViewModel extends ChangeNotifier {
       filteredCustomers = List.from(customers);
     } else {
       filteredCustomers = customers.where((customer) {
-        // Pega as duas variáveis em minúsculo, tratando o tradeName nulo como vazio
         final name = customer.name.toLowerCase();
         final tradeName = (customer.tradeName ?? '').toLowerCase();
         final query = value.toLowerCase();
 
-        // Agora retorna verdadeiro se bater com o Nome OU com o Nome Fantasia
         return name.contains(query) || tradeName.contains(query);
       }).toList();
     }
@@ -141,37 +147,42 @@ class ClientViewModel extends ChangeNotifier {
     required String houseNumber,
     required String address,
   }) async {
-    String? formattedDate = birthDate.trim().isEmpty ? null : birthDate;
+    try {
+      String? formattedDate = birthDate.trim().isEmpty ? null : birthDate;
 
-    if (birthDate.contains('/')) {
-      formattedDate = DateFormat(
-        'yyyy-MM-dd',
-      ).format(DateFormat('dd/MM/yyyy').parse(birthDate));
+      if (birthDate.contains('/')) {
+        formattedDate = DateFormat(
+          'yyyy-MM-dd',
+        ).format(DateFormat('dd/MM/yyyy').parse(birthDate));
+      }
+
+      final companyId = await _getCompanyId();
+
+      await supabase
+          .from('customer')
+          .update({
+            'name': name,
+            'trade_name': tradeName, 
+            'route_id': routeId,     
+            'birth_date': formattedDate,
+            'phone': phone,
+            'email': email,
+            'customer_type': customerType,
+            'cpforcnpj': cpfOrCnpj,
+            'state_': state,
+            'city': city,
+            'neighborhood': neighborhood,
+            'cep': cep,
+            'house_number': houseNumber,
+            'address': address,
+          })
+          .eq('id', id)
+          .eq('company_id', companyId);
+
+      await loadCustomers();
+    } catch (e) {
+      debugPrint("Erro ao atualizar cliente: ${e.toString()}");
+      rethrow;
     }
-
-    final companyId = await _getCompanyId();
-
-    await supabase
-        .from('customer')
-        .update({
-          'name': name,
-          'trade_name': tradeName, 
-          'route_id': routeId,     
-          'birth_date': formattedDate,
-          'phone': phone,
-          'email': email,
-          'customer_type': customerType,
-          'cpforcnpj': cpfOrCnpj,
-          'state_': state,
-          'city': city,
-          'neighborhood': neighborhood,
-          'cep': cep,
-          'house_number': houseNumber,
-          'address': address,
-        })
-        .eq('id', id)
-        .eq('company_id', companyId);
-
-    await loadCustomers();
   }
 }

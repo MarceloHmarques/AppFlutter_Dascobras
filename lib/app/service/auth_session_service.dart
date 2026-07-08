@@ -24,11 +24,13 @@ class AuthSessionService {
       throw Exception('Usuário não autenticado.');
     }
 
+    // 🌟 QUERY ATUALIZADA: Buscando a coluna 'name' (em minúsculas) de company_user
     final response = await supabase
         .from('company_user')
         .select('''
         company_id,
         role,
+        name,
         company:company_id (
           id,
           name
@@ -46,6 +48,9 @@ class AuthSessionService {
     await prefs.setString('companyId', response['company_id']);
     await prefs.setString('role', response['role']);
     await prefs.setString('companyName', response['company']?['name'] ?? '');
+    
+    // 💾 Salvando o nome do vendedor/utilizador localmente
+    await prefs.setString('userName', response['name'] ?? 'Vendedor Sem Nome');
   }
 
   Future<String> getCompanyId() async {
@@ -82,6 +87,12 @@ class AuthSessionService {
     return prefs.getString('companyName');
   }
 
+  // 📝 Método adicionado para conseguires resgatar o Nome do Vendedor na interface!
+  Future<String?> getUserName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('userName');
+  }
+
   Future<bool> canManageProducts() async {
     return hasAnyRole([ownerRole, adminRole, managerRole]);
   }
@@ -100,6 +111,7 @@ class AuthSessionService {
     await prefs.remove('companyId');
     await prefs.remove('role');
     await prefs.remove('companyName');
+    await prefs.remove('userName'); // Limpa também o nome do vendedor
   }
 
   Future<void> saveLoginDate() async {

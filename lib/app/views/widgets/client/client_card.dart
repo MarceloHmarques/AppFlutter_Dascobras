@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:DasCobras/app/model/customer_model.dart';
 
 class ClientCard extends StatelessWidget {
-  final dynamic client;
+  final CustomerModel client; 
   final VoidCallback onView;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -16,12 +17,11 @@ class ClientCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 🛠️ Tratamento para verificar se existe Nome Fantasia (trade_name) preenchido
     final hasTradeName =
         client.tradeName != null &&
-        client.tradeName.toString().trim().isNotEmpty;
-    // 🛠️ Tratamento para buscar a Rota (caso ainda não exista no objeto, evita quebrar o app)
-    final routeName = client.route ?? 'Sem Rota Definida';
+        client.tradeName!.trim().isNotEmpty;
+        
+    final routeDisplay = client.routeName ?? 'Sem Rota Definida';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 15, left: 5, right: 5),
@@ -55,10 +55,9 @@ class ClientCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 📋 Exibe o Nome Fantasia em destaque se existir, caso contrário exibe o Razão Social / Nome
                 Text(
                   hasTradeName
-                      ? client.tradeName.toString().toUpperCase()
+                      ? client.tradeName!.toUpperCase()
                       : client.name,
                   style: const TextStyle(
                     fontSize: 20,
@@ -67,15 +66,14 @@ class ClientCard extends StatelessWidget {
                   ),
                 ),
 
-                // 🛠️ Se houver Nome Fantasia, mostra o Nome Civil / Razão Social logo abaixo menor
                 if (hasTradeName)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
                       "Nome: ${client.name}",
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 13,
-                        color: const Color.fromARGB(255, 0, 0, 0),
+                        color: Colors.black,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -83,7 +81,6 @@ class ClientCard extends StatelessWidget {
 
                 const SizedBox(height: 4),
 
-                // 🌐 Row contendo o CPF/CNPJ e a ROTA lado a lado para economizar espaço
                 Row(
                   children: [
                     Column(
@@ -106,14 +103,12 @@ class ClientCard extends StatelessWidget {
                         const Text(
                           "ROTA",
                           style: TextStyle(
-                            color: Color(
-                              0xFF0D3F87,
-                            ), // 🎨 Cor em destaque para a rota
+                            color: Color(0xFF0D3F87),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         Text(
-                          routeName,
+                          routeDisplay,
                           style: const TextStyle(fontWeight: FontWeight.w500),
                         ),
                       ],

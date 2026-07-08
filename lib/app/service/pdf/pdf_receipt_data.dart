@@ -54,4 +54,15 @@ class PdfReceiptData {
         '${date.month.toString().padLeft(2, '0')}/'
         '${date.year}';
   }
+
+String get sellerName {
+    if (sale['vendedor'] != null) {
+      if (sale['vendedor'] is Map) {
+        return sale['vendedor']['name'] ?? 'Não informado';
+      }
+    }
+    return 'Não informado';
+  }
+
+
 }

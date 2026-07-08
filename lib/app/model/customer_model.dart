@@ -4,7 +4,8 @@ class CustomerModel {
   final int id;
   final String name;
   final String? tradeName;
-  final String? route;
+  final int? routeId;       // 🔢 Mantém o ID numérico para o banco
+  final String? routeName;  // 📝 Mantém o Nome em texto para a interface
   final String birthDate;
   final String phone;
   final String email;
@@ -21,7 +22,8 @@ class CustomerModel {
     required this.id,
     required this.name,
     this.tradeName,
-    this.route,
+    this.routeId,
+    this.routeName,
     required this.birthDate,
     required this.phone,
     required this.email,
@@ -44,14 +46,19 @@ class CustomerModel {
       ).format(DateTime.parse(map['birth_date']));
     }
 
+    String? nameOfRoute;
+    if (map['route'] != null && map['route'] is Map) {
+      nameOfRoute = map['route']['name']?.toString();
+    } else if (map['route_name'] != null) {
+      nameOfRoute = map['route_name']?.toString();
+    }
+
     return CustomerModel(
       id: map['id'],
       name: map['name'] ?? '',
       tradeName: map['trade_name']?.toString(),
-
-      // Agora pega o nome da rota em vez do ID
-      route: map['route']?['name']?.toString(),
-
+      routeId: map['route_id'] != null ? int.tryParse(map['route_id'].toString()) : null,
+      routeName: nameOfRoute,
       birthDate: formattedBirthDate,
       phone: map['phone'] ?? '',
       email: map['email'] ?? '',
@@ -71,7 +78,7 @@ class CustomerModel {
       'id': id,
       'name': name,
       'trade_name': tradeName,
-      'route': route,
+      'route_id': routeId,
       'birth_date': birthDate,
       'phone': phone,
       'email': email,
