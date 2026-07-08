@@ -28,6 +28,12 @@ class SaleHistoryViewModel extends ChangeNotifier {
       final rawRole = await AuthSessionService().getRole();
       final userRole = rawRole.trim().toUpperCase();
 
+      // 🔍 PRINTS DE CONTROL: Veja no console se o papel está vindo certo!
+      debugPrint('====================================');
+      debugPrint('DEBUG HISTÓRICO: USUÁRIO ID = $currentUserId');
+      debugPrint('DEBUG HISTÓRICO: CARGO LOGADO = $userRole');
+      debugPrint('====================================');
+
       // 1. Busca as vendas normais da empresa
       var query = supabase
           .from('sale')
@@ -57,12 +63,10 @@ class SaleHistoryViewModel extends ChangeNotifier {
           
       final usersList = List<Map<String, dynamic>>.from(usersResponse);
       
-      // Cria um mapa para busca rápida: { 'id_do_usuario': 'Nome do Vendedor' }
       final userMap = {
         for (var u in usersList) u['user_id'].toString(): u['name'] ?? 'Não informado'
       };
 
-      // 3. Vincula o nome do vendedor dentro do mapa de cada venda
       for (var sale in rawSales) {
         final sellerId = sale['user_id']?.toString();
         sale['vendedor'] = {
