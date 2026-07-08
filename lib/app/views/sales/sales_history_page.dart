@@ -6,7 +6,6 @@ import 'package:DasCobras/app/service/pdf/pdf_receipt_data.dart';
 import 'package:open_filex/open_filex.dart';
 import '../../viewmodels/sale_viewmodel/sale_history_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
-import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
 
 class SalesHistoryPage extends StatefulWidget {
   const SalesHistoryPage({super.key});
@@ -25,7 +24,7 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SaleHistoryViewModel>().loadSales();
-      context.read<SaleHistoryViewModel>().loadRotas(); // Adicione esta linha
+      context.read<SaleHistoryViewModel>().loadRotas();
     });
   }
 
@@ -94,29 +93,31 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
           ),
 
           Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-  child: Consumer<SaleHistoryViewModel>(
-    builder: (context, vm, _) {
-      return DropdownButtonFormField<int>(
-        decoration: const InputDecoration(
-          labelText: 'Filtrar por Rota', 
-          border: OutlineInputBorder(),
-          contentPadding: EdgeInsets.symmetric(horizontal: 10)
-        ),
-        items: [
-          const DropdownMenuItem(value: null, child: Text("Todas as Rotas")),
-          ...vm.rotasDisponiveis.map((rota) => DropdownMenuItem(
-            value: rota['id'] as int,
-            child: Text(rota['name']),
-          )),
-        ],
-        onChanged: (value) {
-          context.read<SaleHistoryViewModel>().filterByRoute(value);
-        },
-      );
-    },
-  ),
-),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+            child: Consumer<SaleHistoryViewModel>(
+              builder: (context, vm, _) {
+                return DropdownButtonFormField<int>(
+                  // AJUSTE: O value agora escuta o ViewModel. Quando você limpa os filtros, ele zera aqui também!
+                  value: vm.selectedRouteId, 
+                  decoration: const InputDecoration(
+                    labelText: 'Filtrar por Rota', 
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10)
+                  ),
+                  items: [
+                    const DropdownMenuItem(value: null, child: Text("Todas as Rotas")),
+                    ...vm.rotasDisponiveis.map((rota) => DropdownMenuItem(
+                      value: rota['id'] as int,
+                      child: Text(rota['name']),
+                    )),
+                  ],
+                  onChanged: (value) {
+                    context.read<SaleHistoryViewModel>().filterByRoute(value);
+                  },
+                );
+              },
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: SizedBox(
@@ -179,35 +180,60 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
-                        title: Text(sale['customer']['name']),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Pedido #${sale['id']}', style: const TextStyle(color: Color(0xFF0D3F87), fontWeight: FontWeight.w600)),
-                            Text('R\$ ${sale['total']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
+  title: Row(
+    children: [
+      Expanded(
+        child: RichText(
+          text: TextSpan(
+            style: const TextStyle(fontSize: 16, color: Colors.black),
+            children: [
+              TextSpan(
+                text: sale['customer']?['name'] ?? 'Cliente não informado',
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              if (sale['customer']?['trade_name'] != null && 
+                  sale['customer']['trade_name'].toString().trim().isNotEmpty)
+                TextSpan(
+                  text: ' (${sale['customer']['trade_name']})',
+                  style: TextStyle(
+                    color: Colors.grey[600], 
+                    fontWeight: FontWeight.normal,
+                    fontSize: 14,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  ),
+  subtitle: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 4),
+      Text('Pedido #${sale['id']}', style: const TextStyle(color: Color(0xFF0D3F87), fontWeight: FontWeight.w600)),
+      Text('R\$ ${sale['total']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+    ],
+  ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-  icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
-  onPressed: () async {
-    final itens = await vm.getItemsDaVenda(sale['id']);
-    
-    if (!mounted) return;
+                              icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
+                              onPressed: () async {
+                                final itens = await vm.getItemsDaVenda(sale['id']);
+                                
+                                if (!mounted) return;
 
-    // Use o Provider.of com listen: false. Ele é mais tolerante ao escopo.
-    // O 'context' aqui ainda é o da página, mas o listen: false busca na hierarquia.
-    final carregamentoVm = Provider.of<CarregamentoViewModel>(context, listen: false);
-    
-    carregamentoVm.adicionarPedido(itens);
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Adicionado ao carregamento!')),
-    );
-  },
-),
+                                final carregamentoVm = Provider.of<CarregamentoViewModel>(context, listen: false);
+                                
+                                carregamentoVm.adicionarPedido(itens);
+                                
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Adicionado ao carregamento!')),
+                                );
+                              },
+                            ),
                             IconButton(
                               icon: const Icon(Icons.picture_as_pdf, color: Color(0xFF0D3F87)),
                               onPressed: () async {

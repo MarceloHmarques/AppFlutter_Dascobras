@@ -20,7 +20,7 @@ class ClientViewModel extends ChangeNotifier {
 
       final response = await supabase
           .from('customer')
-          .select('*, route(name)')
+          .select()
           .eq('is_active', true)
           .eq('company_id', companyId)
           .order('name');
@@ -42,7 +42,13 @@ class ClientViewModel extends ChangeNotifier {
       filteredCustomers = List.from(customers);
     } else {
       filteredCustomers = customers.where((customer) {
-        return customer.name.toLowerCase().contains(value.toLowerCase());
+        // Pega as duas variáveis em minúsculo, tratando o tradeName nulo como vazio
+        final name = customer.name.toLowerCase();
+        final tradeName = (customer.tradeName ?? '').toLowerCase();
+        final query = value.toLowerCase();
+
+        // Agora retorna verdadeiro se bater com o Nome OU com o Nome Fantasia
+        return name.contains(query) || tradeName.contains(query);
       }).toList();
     }
 
@@ -51,8 +57,8 @@ class ClientViewModel extends ChangeNotifier {
 
   Future<void> addCustomer({
     required String name,
-    String? tradeName,
-    String? routeId,
+    String? tradeName, 
+    String? routeId,   
     required String birthDate,
     required String phone,
     required String email,
@@ -75,10 +81,10 @@ class ClientViewModel extends ChangeNotifier {
 
       final companyId = await _getCompanyId();
       await supabase.from('customer').insert({
-        'company_id': companyId,
+        'company_id': companyId, 
         'name': name,
-        'trade_name': tradeName,
-        'route_id': routeId,
+        'trade_name': tradeName, 
+        'route_id': routeId,     
         'birth_date': formattedDate,
         'phone': phone,
         'email': email,
@@ -101,8 +107,7 @@ class ClientViewModel extends ChangeNotifier {
     }
   }
 
-  Future<void> deleteCustomer(String id) async {
-    // 🛠️ Mudado int para String para casar com o Model
+  Future<void> deleteCustomer(String id) async { 
     try {
       final companyId = await _getCompanyId();
 
@@ -120,10 +125,10 @@ class ClientViewModel extends ChangeNotifier {
   }
 
   Future<void> updateCustomer({
-    required String id, // 🛠️ Mudado int para String para casar com o Model
+    required String id, 
     required String name,
-    String? tradeName, // 🛠️ Adicionado opcional
-    String? routeId, // 🛠️ Adicionado opcional
+    String? tradeName, 
+    String? routeId,   
     required String birthDate,
     required String phone,
     required String email,
@@ -150,8 +155,8 @@ class ClientViewModel extends ChangeNotifier {
         .from('customer')
         .update({
           'name': name,
-          'trade_name': tradeName, // 🛠️ Atualização da coluna ativa
-          'route_id': routeId, // 🛠️ Atualização da coluna ativa
+          'trade_name': tradeName, 
+          'route_id': routeId,     
           'birth_date': formattedDate,
           'phone': phone,
           'email': email,

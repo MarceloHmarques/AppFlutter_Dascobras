@@ -7,21 +7,25 @@ class SaleHistoryViewModel extends ChangeNotifier {
 
   List<Map<String, dynamic>> sales = [];
   List<Map<String, dynamic>> filteredSales = [];
-
+  List<Map<String, dynamic>> rotasDisponiveis = [];
+  
+  // Guarda o ID da rota selecionada no filtro da tela
+  int? selectedRouteId;
   String _searchText = '';
 
   Future<List<Map<String, dynamic>>> getItemsDaVenda(int saleId) async {
-  final response = await supabase
-      .from('sale_item')
-      .select('product_id, quantity, product(name)')
-      .eq('sale_id', saleId);
-  return List<Map<String, dynamic>>.from(response);
-}
+    final response = await supabase
+        .from('sale_item')
+        .select('product_id, quantity, product(name)')
+        .eq('sale_id', saleId);
+    return List<Map<String, dynamic>>.from(response);
+  }
 
   Future<void> loadSales() async {
     try {
       final companyId = await AuthSessionService().getCompanyId();
 
+      // AJUSTE: Incluído o route_id dentro do nó do customer para o filtro funcionar
       final response = await supabase
           .from('sale')
           .select('''
@@ -37,7 +41,8 @@ class SaleHistoryViewModel extends ChangeNotifier {
         neighborhood,
         cep,
         house_number,
-        address
+        address,
+        route_id
       ),
       company:company_id (
         id,
@@ -59,9 +64,10 @@ class SaleHistoryViewModel extends ChangeNotifier {
       sales = List<Map<String, dynamic>>.from(response);
       filteredSales = List.from(sales);
 
-      notifyListeners();
+      // Toda vez que recarregar as vendas, roda os filtros para manter a tela atualizada
+      _applyFilters();
     } catch (e) {
-      debugPrint(e.toString());
+      debugPrint("Erro ao carregar vendas: ${e.toString()}");
     }
   }
 
@@ -70,43 +76,35 @@ class SaleHistoryViewModel extends ChangeNotifier {
     _applyFilters();
   }
 
-List<Map<String, dynamic>> rotasDisponiveis = [];
-
+  // Carrega apenas as rotas válidas/ativas para o filtro
   Future<void> loadRotas() async {
-  final response = await supabase.from('route').select('id, name').eq('is_active', true);
-  rotasDisponiveis = List<Map<String, dynamic>>.from(response);
-  notifyListeners();
-}
-
-void filterByRoute(int? routeId) {
-  if (routeId == null) {
-    filteredSales = sales;
-  } else {
-    // Filtra as vendas cujo cliente tem o route_id igual ao selecionado
-    filteredSales = sales.where((sale) => 
-      sale['customer'] != null && 
-      sale['customer']['route_id'] == routeId
-    ).toList();
+    try {
+      final response = await supabase
+          .from('route')
+          .select('id, name')
+          .eq('is_active', true);
+      rotasDisponiveis = List<Map<String, dynamic>>.from(response);
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Erro ao carregar rotas: ${e.toString()}");
+    }
   }
-  notifyListeners();
-}
+
+  // Modifica a rota selecionada e aplica as regras de filtragem combinadas
+  void filterByRoute(int? routeId) {
+    selectedRouteId = routeId;
+    _applyFilters();
+  }
 
   void filterToday() {
     final today = DateTime.now();
 
-    print("Hoje: $today");
-
     filteredSales = sales.where((sale) {
       final date = DateTime.parse(sale['sale_date']);
-
-      print("Venda ${sale['id']}: $date");
-
       return date.year == today.year &&
           date.month == today.month &&
           date.day == today.day;
     }).toList();
-
-    print("Encontradas: ${filteredSales.length}");
 
     notifyListeners();
   }
@@ -152,26 +150,34 @@ void filterByRoute(int? routeId) {
   }
 
   void clearFilters() {
+    selectedRouteId = null;
+    _searchText = '';
     filteredSales = List.from(sales);
-
-    if (_searchText.isNotEmpty) {
-      searchCustomer(_searchText);
-    } else {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
+  // Centraliza a lógica unificando o filtro de busca por texto e o filtro por rota por completo
   void _applyFilters() {
-    if (_searchText.trim().isEmpty) {
-      filteredSales = List.from(sales);
-    } else {
-      filteredSales = sales.where((sale) {
-        final customer = sale['customer']['name'].toString().toLowerCase();
+    List<Map<String, dynamic>> temporaryList = List.from(sales);
 
-        return customer.contains(_searchText.toLowerCase());
+    // 1. Aplica filtro de texto se houver
+    if (_searchText.trim().isNotEmpty) {
+      temporaryList = temporaryList.where((sale) {
+        if (sale['customer'] == null || sale['customer']['name'] == null) return false;
+        final customerName = sale['customer']['name'].toString().toLowerCase();
+        return customerName.contains(_searchText.toLowerCase());
       }).toList();
     }
 
+    // 2. Aplica filtro de rota se houver uma selecionada
+    if (selectedRouteId != null) {
+      temporaryList = temporaryList.where((sale) {
+        return sale['customer'] != null && 
+               sale['customer']['route_id'] == selectedRouteId;
+      }).toList();
+    }
+
+    filteredSales = temporaryList;
     notifyListeners();
   }
 
