@@ -97,7 +97,6 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
             child: Consumer<SaleHistoryViewModel>(
               builder: (context, vm, _) {
                 return DropdownButtonFormField<int>(
-                  // AJUSTE: O value agora escuta o ViewModel. Quando você limpa os filtros, ele zera aqui também!
                   value: vm.selectedRouteId, 
                   decoration: const InputDecoration(
                     labelText: 'Filtrar por Rota', 
@@ -180,57 +179,69 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
-  title: Row(
-    children: [
-      Expanded(
-        child: RichText(
-          text: TextSpan(
-            style: const TextStyle(fontSize: 16, color: Colors.black),
-            children: [
-              TextSpan(
-                text: sale['customer']?['name'] ?? 'Cliente não informado',
-                style: const TextStyle(fontWeight: FontWeight.w500),
-              ),
-              if (sale['customer']?['trade_name'] != null && 
-                  sale['customer']['trade_name'].toString().trim().isNotEmpty)
-                TextSpan(
-                  text: ' (${sale['customer']['trade_name']})',
-                  style: TextStyle(
-                    color: Colors.grey[600], 
-                    fontWeight: FontWeight.normal,
-                    fontSize: 14,
-                  ),
-                ),
-            ],
-          ),
-        ),
-      ),
-    ],
-  ),
-  subtitle: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(height: 4),
-      Text('Pedido #${sale['id']}', style: const TextStyle(color: Color(0xFF0D3F87), fontWeight: FontWeight.w600)),
-      Text('R\$ ${sale['total']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
-    ],
-  ),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                                  children: [
+                                    TextSpan(
+                                      text: sale['customer']?['name'] ?? 'Cliente não informado',
+                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                    ),
+                                    if (sale['customer']?['trade_name'] != null && 
+                                        sale['customer']['trade_name'].toString().trim().isNotEmpty)
+                                      TextSpan(
+                                        text: ' (${sale['customer']['trade_name']})',
+                                        style: TextStyle(
+                                          color: Colors.grey[600], 
+                                          fontWeight: FontWeight.normal,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 4),
+                            Text('Pedido #${sale['id']}', style: const TextStyle(color: Color(0xFF0D3F87), fontWeight: FontWeight.w600)),
+                            Text('R\$ ${sale['total']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
                               icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
                               onPressed: () async {
-                                final itens = await vm.getItemsDaVenda(sale['id']);
-                                
+                                // 🟢 Corrigido: Instancia o viewmodel do carregamento localmente no escopo do botão
+                                final carregamentoVm = context.read<CarregamentoViewModel>();
+
+                                // 🟢 Corrigido: Se os itens não vierem no mapa inicial, busca de forma assíncrona com o método correto
+                                final itens = sale['items'] ?? sale['itens'] ?? await vm.getSaleItems(sale['id']) ?? [];
+
                                 if (!mounted) return;
 
-                                final carregamentoVm = Provider.of<CarregamentoViewModel>(context, listen: false);
-                                
-                                carregamentoVm.adicionarPedido(itens);
-                                
+                                // 🟢 Estrutura o mapa do pedido completo de forma segura
+                                final pedidoCompleto = {
+                                  'id': sale['id'] ?? sale['order_id'] ?? 0,
+                                  'customer_name': sale['customer']?['name'] ?? 'Cliente não informado',
+                                  'items': itens,
+                                };
+
+                                carregamentoVm.adicionarPedido(pedidoCompleto);
+
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Adicionado ao carregamento!')),
+                                  SnackBar(
+                                    content: Text("Pedido #${sale['id']} adicionado ao carregamento!"),
+                                    backgroundColor: const Color(0xFF0D3F87),
+                                  ),
                                 );
                               },
                             ),

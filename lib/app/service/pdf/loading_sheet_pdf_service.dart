@@ -8,7 +8,7 @@ class LoadingSheetPdfService {
   Future<Uint8List> generateLoadingSheet({
     required String companyName,
     required String routeName,
-    required List<Map<String, dynamic>> items,
+    required List<Map<String, dynamic>> itens, // ✨ Padronizado para 'itens'
   }) async {
     final pdf = pw.Document();
     final String currentDate = DateFormat(
@@ -16,8 +16,8 @@ class LoadingSheetPdfService {
     ).format(DateTime.now());
 
     // Cálculos dos Totais do Rodapé
-    final int totalRecords = items.length;
-    final int totalItemsQuantity = items.fold<int>(
+    final int totalRecords = itens.length;
+    final int totalItemsQuantity = itens.fold<int>(
       0,
       (sum, item) => sum + ((item['quantity'] as num?)?.toInt() ?? 0),
     );
@@ -27,7 +27,6 @@ class LoadingSheetPdfService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 20, vertical: 25),
         crossAxisAlignment: pw.CrossAxisAlignment.start,
-        // Cabeçalho que se repete caso o relatório tenha mais de uma página
         header: (pw.Context context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -70,7 +69,6 @@ class LoadingSheetPdfService {
             ],
           );
         },
-        // Rodapé com numeração de páginas automático
         footer: (pw.Context context) {
           return pw.Container(
             alignment: pw.Alignment.centerRight,
@@ -82,7 +80,6 @@ class LoadingSheetPdfService {
         },
         build: (pw.Context context) {
           return [
-            // Tabela de Produtos Limpa (Apenas dados reais do sistema)
             pw.Table(
               border: const pw.TableBorder(
                 bottom: pw.BorderSide(color: PdfColors.black, width: 0.5),
@@ -98,7 +95,6 @@ class LoadingSheetPdfService {
                 3: pw.FlexColumnWidth(2), // Quantidade
               },
               children: [
-                // Linha de Cabeçalho da Tabela
                 pw.TableRow(
                   decoration: const pw.BoxDecoration(color: PdfColors.grey200),
                   children: [
@@ -112,8 +108,7 @@ class LoadingSheetPdfService {
                     ),
                   ],
                 ),
-                // Linhas dos Itens do Carregamento
-                ...items.map((item) {
+                ...itens.map((item) {
                   return pw.TableRow(
                     children: [
                       _buildCell(item['product_id']?.toString() ?? '-'),
@@ -134,8 +129,6 @@ class LoadingSheetPdfService {
               ],
             ),
             pw.SizedBox(height: 15),
-
-            // Bloco de Resumos e Totais IGUAL ao da foto, mas sem os zeros extras
             pw.Container(
               width: double.infinity,
               padding: const pw.EdgeInsets.only(top: 8),
@@ -203,7 +196,6 @@ class LoadingSheetPdfService {
     return pdf.save();
   }
 
-  // Helper para criar as células com espaçamento correto padrão de relatórios
   static pw.Widget _buildCell(
     String text, {
     bool isHeader = false,
@@ -215,7 +207,7 @@ class LoadingSheetPdfService {
         text,
         textAlign: align,
         style: pw.TextStyle(
-          fontSize: isHeader ? 9 : 9,
+          fontSize: 9,
           fontWeight: isHeader ? pw.FontWeight.bold : pw.FontWeight.normal,
         ),
       ),

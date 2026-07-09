@@ -40,22 +40,49 @@ class PdfService {
 
     final bytes = await pdf.save();
 
+    // 🟢 TRATAMENTO ROBUSTO DO NOME DO CLIENTE
+    String nomeCliente = 'cliente';
+    
+    if (data.customerName != null && data.customerName.trim().isNotEmpty) {
+      nomeCliente = data.customerName
+          .trim()
+          .toLowerCase()
+          // Substitui acentos comuns para não sumir com as letras
+          .replaceAll(RegExp(r'[áàâã]'), 'a')
+          .replaceAll(RegExp(r'[éèê]'), 'e')
+          .replaceAll(RegExp(r'[íìî]'), 'i')
+          .replaceAll(RegExp(r'[óòôõ]'), 'o')
+          .replaceAll(RegExp(r'[úùû]'), 'u')
+          .replaceAll(RegExp(r'[ç]'), 'c')
+          // Remove qualquer outro caractere especial que tenha sobrado
+          .replaceAll(RegExp(r'[^\w\s]+'), '') 
+          // Troca espaços por _
+          .replaceAll(' ', '_');
+    }
+
+    // Caso o tratamento limpe a string por completo, garante o fallback
+    if (nomeCliente.isEmpty) nomeCliente = 'cliente';
+
+    final String nomeArquivo = 'Venda_${data.orderId}_$nomeCliente.pdf';
+
+    // 💡 DICA DE OURO: O Printing.layoutPdf funciona tanto na Web como no Telemóvel!
+    // Se tu queres que o utilizador veja o nome correto ao salvar/imprimir no telemóvel,
+    // podes remover o 'if (kIsWeb)' e deixar esta função rodar para todas as plataformas:
     if (kIsWeb) {
       await Printing.layoutPdf(
         onLayout: (_) async => bytes,
-        name: 'Venda_${data.orderId}.pdf',
+        name: nomeArquivo,
       );
       return File('');
     }
 
+    // Código executado no Telemóvel (Salva localmente com o nome correto)
     final directory = await getApplicationDocumentsDirectory();
-
-    final file = File('${directory.path}/Venda_${data.orderId}.pdf');
-
+    final file = File('${directory.path}/$nomeArquivo');
     await file.writeAsBytes(bytes);
 
     return file;
-  }
+  } // 🟢 Método generateReceipt fecha aqui perfeitamente
 
   static pw.Widget _header(PdfReceiptData data, pw.ImageProvider logo) {
     final date = data.saleDate;
@@ -255,7 +282,7 @@ class PdfService {
               _bold(
                 'QUANT. DE ITENS: $totalQuantity',
                 9,
-              ), // Exibe a soma correta
+              ),
             ],
           ),
         ),
@@ -322,7 +349,7 @@ class PdfService {
     );
   }
 
-  static Future<File> generatePickingList(List itens) async {
+  static Future<File> generatePickingList(List itens, String customerName) async {
     final pdf = pw.Document();
 
     pdf.addPage(
@@ -347,17 +374,23 @@ class PdfService {
 
     final bytes = await pdf.save();
 
+    // 💡 FORMATANDO O NOME DO CLIENTE PARA A LISTA DE SEPARAÇÃO
+    final String nomeCliente = customerName
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^\w\s]+'), '')
+        .replaceAll(' ', '_');
+
     if (kIsWeb) {
       await Printing.layoutPdf(
         onLayout: (_) async => bytes,
-        name: 'PickingList.pdf',
+        name: 'PickingList_$nomeCliente.pdf',
       );
 
       return File('');
     }
 
     final dir = await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/PickingList.pdf');
+    final file = File('${dir.path}/PickingList_$nomeCliente.pdf');
 
     await file.writeAsBytes(bytes);
 

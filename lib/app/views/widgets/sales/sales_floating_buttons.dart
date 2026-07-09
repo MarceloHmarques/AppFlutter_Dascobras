@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart'; // Garanta que este import aponta para o seu arquivo correto
 
 class SalesFloatingButtons extends StatelessWidget {
   final int cartCount;
@@ -35,9 +37,14 @@ class SalesFloatingButtons extends StatelessWidget {
           heroTag: 'loading',
           backgroundColor: const Color(0xFF0D3F87),
           onPressed: onLoading,
-          child: Badge(
-            label: Text(loadingCount.toString()),
-            child: const Icon(Icons.local_shipping, color: Colors.white),
+          // 🟢 CORREÇÃO AQUI: Usamos o Consumer para escutar dinamicamente o número real de PEDIDOS salvos no ViewModel!
+          child: Consumer<CarregamentoViewModel>(
+            builder: (context, vm, _) {
+              return Badge(
+                label: Text(vm.pedidosCarregamento.length.toString()),
+                child: const Icon(Icons.local_shipping, color: Colors.white),
+              );
+            },
           ),
         ),
 
