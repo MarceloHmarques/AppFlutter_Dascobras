@@ -7,6 +7,8 @@ import 'package:open_filex/open_filex.dart';
 import '../../viewmodels/sale_viewmodel/sale_history_viewmodel.dart';
 import 'package:DasCobras/app/viewmodels/carregamento_viewmodel.dart';
 
+import 'package:DasCobras/app/views/commission/commission_report_page.dart';
+
 class SalesHistoryPage extends StatefulWidget {
   const SalesHistoryPage({super.key});
 
@@ -54,22 +56,35 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Histórico'),
-        backgroundColor: const Color(0xFF0D3F87),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_alt_off),
-            tooltip: 'Limpar filtros',
-            onPressed: () {
-              setState(() {
-                selectedFilter = '';
-              });
-              context.read<SaleHistoryViewModel>().clearFilters();
-            },
-          ),
-        ],
-      ),
+  title: const Text('Histórico'),
+  backgroundColor: const Color(0xFF0D3F87),
+  foregroundColor: Colors.white,
+  actions: [
+    // 🟢 Botão de Relatório de Comissões
+    IconButton(
+      icon: const Icon(Icons.attach_money),
+      tooltip: 'Ver Comissões',
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => CommissionReportPage()),
+        );
+      },
+    ),
+    
+    // Seu botão original de limpar filtros
+    IconButton(
+      icon: const Icon(Icons.filter_alt_off),
+      tooltip: 'Limpar filtros',
+      onPressed: () {
+        setState(() {
+          selectedFilter = '';
+        });
+        context.read<SaleHistoryViewModel>().clearFilters();
+      },
+    ),
+  ],
+),
       body: Column(
         children: [
           Padding(
