@@ -144,7 +144,7 @@ class CartPage extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF0D3F87), // azul
+                  color: Color(0xFF0D3F87), 
                 ),
               ),
             ],
@@ -581,7 +581,7 @@ class CartPage extends StatelessWidget {
       final pdfFile = await PdfService.generateReceipt(data);
 
       if (context.mounted) {
-        Navigator.pop(context); // fecha loading
+        Navigator.pop(context); 
       }
 
       await Share.shareXFiles([

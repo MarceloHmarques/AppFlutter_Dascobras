@@ -39,22 +39,19 @@ class PdfService {
     );
 
     final bytes = await pdf.save();
-
-    // 🟢 TRATAMENTO ROBUSTO DO NOME DO CLIENTE
+    
     String nomeCliente = 'cliente';
     
     if (data.customerName != null && data.customerName.trim().isNotEmpty) {
       nomeCliente = data.customerName
           .trim()
           .toLowerCase()
-          // Substitui acentos comuns para não sumir com as letras
           .replaceAll(RegExp(r'[áàâã]'), 'a')
           .replaceAll(RegExp(r'[éèê]'), 'e')
           .replaceAll(RegExp(r'[íìî]'), 'i')
           .replaceAll(RegExp(r'[óòôõ]'), 'o')
           .replaceAll(RegExp(r'[úùû]'), 'u')
           .replaceAll(RegExp(r'[ç]'), 'c')
-          // Remove qualquer outro caractere especial que tenha sobrado
           .replaceAll(RegExp(r'[^\w\s]+'), '') 
           // Troca espaços por _
           .replaceAll(' ', '_');
@@ -64,10 +61,6 @@ class PdfService {
     if (nomeCliente.isEmpty) nomeCliente = 'cliente';
 
     final String nomeArquivo = 'Venda_${data.orderId}_$nomeCliente.pdf';
-
-    // 💡 DICA DE OURO: O Printing.layoutPdf funciona tanto na Web como no Telemóvel!
-    // Se tu queres que o utilizador veja o nome correto ao salvar/imprimir no telemóvel,
-    // podes remover o 'if (kIsWeb)' e deixar esta função rodar para todas as plataformas:
     if (kIsWeb) {
       await Printing.layoutPdf(
         onLayout: (_) async => bytes,
@@ -82,7 +75,7 @@ class PdfService {
     await file.writeAsBytes(bytes);
 
     return file;
-  } // 🟢 Método generateReceipt fecha aqui perfeitamente
+  } 
 
   static pw.Widget _header(PdfReceiptData data, pw.ImageProvider logo) {
     final date = data.saleDate;

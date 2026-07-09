@@ -123,24 +123,20 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  double get total {
-    double value = 0;
-
+    double get total {
+    double totalValue = 0;
     for (var item in cart) {
-      value += item.subtotal;
+      totalValue += item.subtotal;
     }
-
-    return value;
+    return totalValue;
   }
 
   double get totalSaleCommission {
-    double value = 0;
-
+    double commissionValue = 0;
     for (var item in cart) {
-      value += item.totalCommission;
+      commissionValue += item.totalCommission;
     }
-
-    return value;
+    return commissionValue;
   }
 
   Future<Map<String, dynamic>> saveSale({
@@ -169,6 +165,7 @@ class SaleViewModel extends ChangeNotifier {
           .insert({
             "customer_id": customer!.id,
             "total": total,
+            "total_commission": totalSaleCommission,
             "status_order": statusOrder,
             "payment_method": null,
             "user_id": userId,

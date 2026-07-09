@@ -169,7 +169,7 @@ class CarregamentoPage extends StatelessWidget {
                 "FINALIZAR CARREGAMENTO",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
               ),
-              onPressed: () => _gerarPdfEFinalizar(context, vm), // 🟢 Direto para a ação!
+              onPressed: () => _gerarPdfEFinalizar(context, vm), 
             ),
           );
         },
