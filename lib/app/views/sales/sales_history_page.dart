@@ -56,42 +56,44 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-  title: const Text('Histórico'),
-  backgroundColor: const Color(0xFF0D3F87),
-  foregroundColor: Colors.white,
-  actions: [
-    // 🟢 Botão de Relatório de Comissões
-    IconButton(
-      icon: const Icon(Icons.attach_money),
-      tooltip: 'Ver Comissões',
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => CommissionReportPage()),
-        );
-      },
-    ),
-    
-    // Seu botão original de limpar filtros
-    IconButton(
-      icon: const Icon(Icons.filter_alt_off),
-      tooltip: 'Limpar filtros',
-      onPressed: () {
-        setState(() {
-          selectedFilter = '';
-        });
-        context.read<SaleHistoryViewModel>().clearFilters();
-      },
-    ),
-  ],
-),
+        title: const Text('Histórico'),
+        backgroundColor: const Color(0xFF0D3F87),
+        foregroundColor: Colors.white,
+        actions: [
+          // 🟢 Botão de Relatório de Comissões
+          IconButton(
+            icon: const Icon(Icons.attach_money),
+            tooltip: 'Ver Comissões',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CommissionReportPage()),
+              );
+            },
+          ),
+
+          // Seu botão original de limpar filtros
+          IconButton(
+            icon: const Icon(Icons.filter_alt_off),
+            tooltip: 'Limpar filtros',
+            onPressed: () {
+              setState(() {
+                selectedFilter = '';
+              });
+              context.read<SaleHistoryViewModel>().clearFilters();
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(15),
             child: SearchBar(
               hintText: 'Buscar cliente...',
-              hintStyle: const WidgetStatePropertyAll(TextStyle(color: Color(0xFF0D3F87))),
+              hintStyle: const WidgetStatePropertyAll(
+                TextStyle(color: Color(0xFF0D3F87)),
+              ),
               elevation: const WidgetStatePropertyAll(0),
               backgroundColor: const WidgetStatePropertyAll(Colors.white),
               trailing: const [Icon(Icons.search, color: Color(0xFF0D3F87))],
@@ -112,18 +114,23 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
             child: Consumer<SaleHistoryViewModel>(
               builder: (context, vm, _) {
                 return DropdownButtonFormField<int>(
-                  value: vm.selectedRouteId, 
+                  value: vm.selectedRouteId,
                   decoration: const InputDecoration(
-                    labelText: 'Filtrar por Rota', 
+                    labelText: 'Filtrar por Rota',
                     border: OutlineInputBorder(),
-                    contentPadding: EdgeInsets.symmetric(horizontal: 10)
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10),
                   ),
                   items: [
-                    const DropdownMenuItem(value: null, child: Text("Todas as Rotas")),
-                    ...vm.rotasDisponiveis.map((rota) => DropdownMenuItem(
-                      value: rota['id'] as int,
-                      child: Text(rota['name']),
-                    )),
+                    const DropdownMenuItem(
+                      value: null,
+                      child: Text("Todas as Rotas"),
+                    ),
+                    ...vm.rotasDisponiveis.map(
+                      (rota) => DropdownMenuItem(
+                        value: rota['id'] as int,
+                        child: Text(rota['name']),
+                      ),
+                    ),
                   ],
                   onChanged: (value) {
                     context.read<SaleHistoryViewModel>().filterByRoute(value);
@@ -139,12 +146,17 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
               height: 48,
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.date_range),
-                label: const Text('Filtrar por período', style: TextStyle(fontWeight: FontWeight.w600)),
+                label: const Text(
+                  'Filtrar por período',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
                 style: OutlinedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: const Color(0xFF0D3F87),
                   side: const BorderSide(color: Color(0xFF0D3F87), width: 1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
                 onPressed: () async {
                   final range = await showDateRangePicker(
@@ -156,7 +168,10 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                     setState(() {
                       selectedFilter = 'Período';
                     });
-                    context.read<SaleHistoryViewModel>().filterByDate(range.start, range.end);
+                    context.read<SaleHistoryViewModel>().filterByDate(
+                      range.start,
+                      range.end,
+                    );
                   }
                 },
               ),
@@ -167,11 +182,20 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
             padding: const EdgeInsets.symmetric(horizontal: 15),
             child: Row(
               children: [
-                _buildFilterButton('Hoje', () => context.read<SaleHistoryViewModel>().filterToday()),
+                _buildFilterButton(
+                  'Hoje',
+                  () => context.read<SaleHistoryViewModel>().filterToday(),
+                ),
                 const SizedBox(width: 8),
-                _buildFilterButton('7 Dias', () => context.read<SaleHistoryViewModel>().filterLast7Days()),
+                _buildFilterButton(
+                  '7 Dias',
+                  () => context.read<SaleHistoryViewModel>().filterLast7Days(),
+                ),
                 const SizedBox(width: 8),
-                _buildFilterButton('30 Dias', () => context.read<SaleHistoryViewModel>().filterLast30Days()),
+                _buildFilterButton(
+                  '30 Dias',
+                  () => context.read<SaleHistoryViewModel>().filterLast30Days(),
+                ),
               ],
             ),
           ),
@@ -187,10 +211,16 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                   itemBuilder: (_, index) {
                     final sale = vm.filteredSales[index];
                     return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 15,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        border: Border.all(color: const Color(0xFF0D3F87), width: 1.5),
+                        border: Border.all(
+                          color: const Color(0xFF0D3F87),
+                          width: 1.5,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: ListTile(
@@ -199,18 +229,30 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                             Expanded(
                               child: RichText(
                                 text: TextSpan(
-                                  style: const TextStyle(fontSize: 16, color: Colors.black),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.black,
+                                  ),
                                   children: [
                                     TextSpan(
-                                      text: sale['customer']?['name'] ?? 'Cliente não informado',
-                                      style: const TextStyle(fontWeight: FontWeight.w500),
+                                      text:
+                                          sale['customer']?['name'] ??
+                                          'Cliente não informado',
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
                                     ),
-                                    if (sale['customer']?['trade_name'] != null && 
-                                        sale['customer']['trade_name'].toString().trim().isNotEmpty)
+                                    if (sale['customer']?['trade_name'] !=
+                                            null &&
+                                        sale['customer']['trade_name']
+                                            .toString()
+                                            .trim()
+                                            .isNotEmpty)
                                       TextSpan(
-                                        text: ' (${sale['customer']['trade_name']})',
+                                        text:
+                                            ' (${sale['customer']['trade_name']})',
                                         style: TextStyle(
-                                          color: Colors.grey[600], 
+                                          color: Colors.grey[600],
                                           fontWeight: FontWeight.normal,
                                           fontSize: 14,
                                         ),
@@ -225,28 +267,72 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const SizedBox(height: 4),
-                            Text('Pedido #${sale['id']}', style: const TextStyle(color: Color(0xFF0D3F87), fontWeight: FontWeight.w600)),
-                            Text('R\$ ${sale['total']}', style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                            Text(
+                              'Pedido #${sale['id']}',
+                              style: const TextStyle(
+                                color: Color(0xFF0D3F87),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              'R\$ ${sale['total']}',
+                              style: const TextStyle(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: sale['payment_status'] == 'Pago'
+                                    ? Colors.green
+                                    : Colors.orange,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                sale['payment_status'] ?? 'Pendente',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
                           ],
                         ),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.add_shopping_cart, color: Colors.blue),
+                              icon: const Icon(
+                                Icons.add_shopping_cart,
+                                color: Colors.blue,
+                              ),
                               onPressed: () async {
                                 // 🟢 Corrigido: Instancia o viewmodel do carregamento localmente no escopo do botão
-                                final carregamentoVm = context.read<CarregamentoViewModel>();
+                                final carregamentoVm = context
+                                    .read<CarregamentoViewModel>();
 
                                 // 🟢 Corrigido: Se os itens não vierem no mapa inicial, busca de forma assíncrona com o método correto
-                                final itens = sale['items'] ?? sale['itens'] ?? await vm.getSaleItems(sale['id']) ?? [];
+                                final itens =
+                                    sale['items'] ??
+                                    sale['itens'] ??
+                                    await vm.getSaleItems(sale['id']) ??
+                                    [];
 
                                 if (!mounted) return;
 
                                 // 🟢 Estrutura o mapa do pedido completo de forma segura
                                 final pedidoCompleto = {
                                   'id': sale['id'] ?? sale['order_id'] ?? 0,
-                                  'customer_name': sale['customer']?['name'] ?? 'Cliente não informado',
+                                  'customer_name':
+                                      sale['customer']?['name'] ??
+                                      'Cliente não informado',
                                   'items': itens,
                                 };
 
@@ -254,32 +340,142 @@ class _SalesHistoryPageState extends State<SalesHistoryPage> {
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text("Pedido #${sale['id']} adicionado ao carregamento!"),
+                                    content: Text(
+                                      "Pedido #${sale['id']} adicionado ao carregamento!",
+                                    ),
                                     backgroundColor: const Color(0xFF0D3F87),
                                   ),
                                 );
                               },
                             ),
                             IconButton(
-                              icon: const Icon(Icons.picture_as_pdf, color: Color(0xFF0D3F87)),
+                              icon: Icon(
+                                sale['payment_status'] == 'Pago'
+                                    ? Icons.check_circle
+                                    : Icons.attach_money,
+                                color: sale['payment_status'] == 'Pago'
+                                    ? Colors.green
+                                    : Colors.orange,
+                              ),
+                              tooltip: sale['payment_status'] == 'Pago'
+                                  ? 'Venda paga'
+                                  : 'Marcar como paga',
+                              onPressed: sale['payment_status'] == 'Pago'
+                                  ? null
+                                  : () async {
+                                      final confirmar = await showDialog<bool>(
+                                        context: context,
+                                        builder: (_) => AlertDialog(
+                                          backgroundColor: Colors.white,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          title: const Text(
+                                            'Confirmar pagamento',
+                                            style: TextStyle(
+                                              color: Color(0xFF0D3F87),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          content: const Text(
+                                            'Deseja marcar esta venda como paga?',
+                                            style: TextStyle(
+                                              color: Colors.black87,
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              style: TextButton.styleFrom(
+                                                foregroundColor: Colors.red,
+                                              ),
+                                              onPressed: () =>
+                                                  Navigator.pop(context, false),
+                                              child: const Text(
+                                                'Cancelar',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                            ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(
+                                                  0xFF0D3F87,
+                                                ),
+                                                foregroundColor: Colors.white,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                ),
+                                              ),
+                                              onPressed: () =>
+                                                  Navigator.pop(context, true),
+                                              child: const Text(
+                                                'Confirmar',
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                      if (confirmar == true) {
+                                        await vm.markAsPaid(sale['id']);
+                                      }
+                                    },
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.picture_as_pdf,
+                                color: Color(0xFF0D3F87),
+                              ),
                               onPressed: () async {
                                 try {
-                                  final items = await vm.getSaleItems(sale['id']);
-                                  final data = PdfReceiptData(sale: sale, company: sale['company'] ?? {}, customer: sale['customer'], items: items);
-                                  final pdfFile = await PdfService.generateReceipt(data);
+                                  final items = await vm.getSaleItems(
+                                    sale['id'],
+                                  );
+                                  final data = PdfReceiptData(
+                                    sale: sale,
+                                    company: sale['company'] ?? {},
+                                    customer: sale['customer'],
+                                    items: items,
+                                  );
+                                  final pdfFile =
+                                      await PdfService.generateReceipt(data);
                                   if (!mounted) return;
                                   showModalBottomSheet(
                                     context: context,
                                     builder: (context) => Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        ListTile(leading: const Icon(Icons.visibility), title: const Text('Visualizar'), onTap: () { Navigator.pop(context); OpenFilex.open(pdfFile.path); }),
-                                        ListTile(leading: const Icon(Icons.share), title: const Text('Compartilhar'), onTap: () { Navigator.pop(context); Share.shareXFiles([XFile(pdfFile.path)]); }),
+                                        ListTile(
+                                          leading: const Icon(Icons.visibility),
+                                          title: const Text('Visualizar'),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            OpenFilex.open(pdfFile.path);
+                                          },
+                                        ),
+                                        ListTile(
+                                          leading: const Icon(Icons.share),
+                                          title: const Text('Compartilhar'),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            Share.shareXFiles([
+                                              XFile(pdfFile.path),
+                                            ]);
+                                          },
+                                        ),
                                       ],
                                     ),
                                   );
                                 } catch (e) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text(e.toString())),
+                                  );
                                 }
                               },
                             ),

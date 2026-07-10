@@ -152,4 +152,42 @@ class ReportsViewModel extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  List<Map<String, dynamic>> pendingSales = [];
+
+  Future<void> loadPendingSales() async {
+    final companyId = await authSession.getCompanyId();
+
+    final response = await supabase
+        .from('sale')
+        .select('''
+        *,
+        customer:customer_id(*),
+        company:company_id(*)
+      ''')
+        .eq('company_id', companyId)
+        .eq('payment_status', 'Pendente')
+        .order('id', ascending: false);
+
+    pendingSales = List<Map<String, dynamic>>.from(response);
+
+    notifyListeners();
+  }
+
+  Future<List<Map<String, dynamic>>> getSaleItems(int saleId) async {
+    final response = await supabase
+        .from('sale_item')
+        .select('''
+        *,
+        product:product_id (
+          id,
+          name,
+          brand,
+          unit_type
+        )
+      ''')
+        .eq('sale_id', saleId);
+
+    return List<Map<String, dynamic>>.from(response);
+  }
 }

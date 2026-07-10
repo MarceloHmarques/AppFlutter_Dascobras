@@ -123,7 +123,7 @@ class SaleViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-    double get total {
+  double get total {
     double totalValue = 0;
     for (var item in cart) {
       totalValue += item.subtotal;
@@ -167,6 +167,9 @@ class SaleViewModel extends ChangeNotifier {
             "total": total,
             "total_commission": totalSaleCommission,
             "status_order": statusOrder,
+
+            "payment_status": "Pendente",
+
             "payment_method": null,
             "user_id": userId,
             "company_id": companyId,

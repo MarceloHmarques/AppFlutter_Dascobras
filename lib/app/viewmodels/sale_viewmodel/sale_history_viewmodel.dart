@@ -60,18 +60,17 @@ class SaleHistoryViewModel extends ChangeNotifier {
           .from('company_user')
           .select('user_id, name')
           .eq('company_id', companyId);
-          
+
       final usersList = List<Map<String, dynamic>>.from(usersResponse);
-      
+
       final userMap = {
-        for (var u in usersList) u['user_id'].toString(): u['name'] ?? 'Não informado'
+        for (var u in usersList)
+          u['user_id'].toString(): u['name'] ?? 'Não informado',
       };
 
       for (var sale in rawSales) {
         final sellerId = sale['user_id']?.toString();
-        sale['vendedor'] = {
-          'name': userMap[sellerId] ?? 'Não informado'
-        };
+        sale['vendedor'] = {'name': userMap[sellerId] ?? 'Não informado'};
       }
 
       sales = rawSales;
@@ -82,6 +81,7 @@ class SaleHistoryViewModel extends ChangeNotifier {
       debugPrint("Erro ao carregar vendas: ${e.toString()}");
     }
   }
+
   void searchCustomer(String value) {
     _searchText = value;
     _applyFilters();
@@ -89,7 +89,10 @@ class SaleHistoryViewModel extends ChangeNotifier {
 
   Future<void> loadRotas() async {
     try {
-      final response = await supabase.from('route').select('id, name').eq('is_active', true);
+      final response = await supabase
+          .from('route')
+          .select('id, name')
+          .eq('is_active', true);
       rotasDisponiveis = List<Map<String, dynamic>>.from(response);
       notifyListeners();
     } catch (e) {
@@ -169,9 +172,13 @@ class SaleHistoryViewModel extends ChangeNotifier {
     if (_searchText.trim().isNotEmpty) {
       temporaryList = temporaryList.where((sale) {
         if (sale['customer'] == null) return false;
-        
-        final customerName = (sale['customer']['name'] ?? '').toString().toLowerCase();
-        final tradeName = (sale['customer']['trade_name'] ?? '').toString().toLowerCase();
+
+        final customerName = (sale['customer']['name'] ?? '')
+            .toString()
+            .toLowerCase();
+        final tradeName = (sale['customer']['trade_name'] ?? '')
+            .toString()
+            .toLowerCase();
         final query = _searchText.toLowerCase();
 
         return customerName.contains(query) || tradeName.contains(query);
@@ -181,8 +188,8 @@ class SaleHistoryViewModel extends ChangeNotifier {
     // 2. Aplica o filtro de rota se houver uma selecionada
     if (selectedRouteId != null) {
       temporaryList = temporaryList.where((sale) {
-        return sale['customer'] != null && 
-               sale['customer']['route_id'] == selectedRouteId;
+        return sale['customer'] != null &&
+            sale['customer']['route_id'] == selectedRouteId;
       }).toList();
     }
 
@@ -211,5 +218,14 @@ class SaleHistoryViewModel extends ChangeNotifier {
     }
 
     return items;
+  }
+
+  Future<void> markAsPaid(int saleId) async {
+    await supabase
+        .from('sale')
+        .update({'payment_status': 'Pago'})
+        .eq('id', saleId);
+
+    await loadSales();
   }
 }

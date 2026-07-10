@@ -1,5 +1,6 @@
 import 'package:DasCobras/app/views/client/client_page.dart';
 import 'package:DasCobras/app/views/home/home_page.dart';
+import 'package:DasCobras/app/views/reports/pending_sales_page.dart';
 import 'package:DasCobras/app/views/sales/sales_page.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -127,6 +128,23 @@ class _ReportsPageState extends State<ReportsPage> {
                   title: 'Quantidade de vendas',
                   value: vm.salesCount.toString(),
                   icon: Icons.shopping_cart_outlined,
+                ),
+                _smallInfoCard(
+                  title: 'Pedidos pendentes',
+                  value: vm.pendingSales.length.toString(),
+                  icon: Icons.pending_actions,
+                  onTap: () async {
+                    await vm.loadPendingSales();
+
+                    if (!context.mounted) return;
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const PendingSalesPage(),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 20),
@@ -422,26 +440,31 @@ class _ReportsPageState extends State<ReportsPage> {
     required String title,
     required String value,
     required IconData icon,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFF0D3F87)),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF0D3F87)),
-          const SizedBox(width: 15),
-          Text(title),
-          const Spacer(),
-          Text(
-            value,
-            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-        ],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: const Color(0xFF0D3F87)),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: const Color(0xFF0D3F87)),
+            const SizedBox(width: 15),
+            Text(title),
+            const Spacer(),
+            Text(
+              value,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
       ),
     );
   }

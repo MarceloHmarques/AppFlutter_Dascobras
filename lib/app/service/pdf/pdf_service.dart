@@ -39,9 +39,9 @@ class PdfService {
     );
 
     final bytes = await pdf.save();
-    
+
     String nomeCliente = 'cliente';
-    
+
     if (data.customerName != null && data.customerName.trim().isNotEmpty) {
       nomeCliente = data.customerName
           .trim()
@@ -52,7 +52,7 @@ class PdfService {
           .replaceAll(RegExp(r'[óòôõ]'), 'o')
           .replaceAll(RegExp(r'[úùû]'), 'u')
           .replaceAll(RegExp(r'[ç]'), 'c')
-          .replaceAll(RegExp(r'[^\w\s]+'), '') 
+          .replaceAll(RegExp(r'[^\w\s]+'), '')
           // Troca espaços por _
           .replaceAll(' ', '_');
     }
@@ -62,10 +62,7 @@ class PdfService {
 
     final String nomeArquivo = 'Venda_${data.orderId}_$nomeCliente.pdf';
     if (kIsWeb) {
-      await Printing.layoutPdf(
-        onLayout: (_) async => bytes,
-        name: nomeArquivo,
-      );
+      await Printing.layoutPdf(onLayout: (_) async => bytes, name: nomeArquivo);
       return File('');
     }
 
@@ -75,7 +72,7 @@ class PdfService {
     await file.writeAsBytes(bytes);
 
     return file;
-  } 
+  }
 
   static pw.Widget _header(PdfReceiptData data, pw.ImageProvider logo) {
     final date = data.saleDate;
@@ -272,10 +269,29 @@ class PdfService {
             children: [
               _bold('TOTALIZAÇÃO: ${_currency.format(data.total)}', 9),
               pw.SizedBox(height: 2),
-              _bold(
-                'QUANT. DE ITENS: $totalQuantity',
-                9,
-              ),
+              _bold('QUANT. DE ITENS: $totalQuantity', 9),
+              pw.SizedBox(height: 8),
+
+              if (data.sale['payment_status'] == 'Pago') ...[
+                pw.SizedBox(height: 8),
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(6),
+                  decoration: pw.BoxDecoration(
+                    border: pw.Border.all(color: PdfColors.green, width: 2),
+                    borderRadius: const pw.BorderRadius.all(
+                      pw.Radius.circular(6),
+                    ),
+                  ),
+                  child: pw.Text(
+                    'PAGO',
+                    style: pw.TextStyle(
+                      fontWeight: pw.FontWeight.bold,
+                      fontSize: 12,
+                      color: PdfColors.green,
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -342,7 +358,10 @@ class PdfService {
     );
   }
 
-  static Future<File> generatePickingList(List itens, String customerName) async {
+  static Future<File> generatePickingList(
+    List itens,
+    String customerName,
+  ) async {
     final pdf = pw.Document();
 
     pdf.addPage(
