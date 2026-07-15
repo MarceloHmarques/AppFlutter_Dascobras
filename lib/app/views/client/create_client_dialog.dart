@@ -73,6 +73,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
           : birthDateController.text.trim();
           final emailValue = emailController.text.trim().isEmpty ? null : emailController.text.trim();
 
+
       await context.read<ClientViewModel>().addCustomer(
         name: nameController.text.trim(),
         birthDate: birthDateValue,
@@ -203,7 +204,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return customerType == 'PF' ? 'CPF obrigatório' : 'CNPJ obrigatório';
+                    return null; 
                     }
                     final valid = customerType == 'PF'
                         ? PersonalValidation.utilsCpf(value)
@@ -236,7 +237,7 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                 ),
 
                 buildField(
-                  "Data de nascimento (Opcional)",
+                  "Data de nascimento",
                   birthDateController,
                   readOnly: true,
                   suffixIcon: const Icon(Icons.calendar_today),
@@ -259,11 +260,16 @@ class _CreateClientDialogState extends State<CreateClientDialog> {
                   phoneController,
                   keyboardType: TextInputType.phone,
                   inputFormatters: [Mask.phoneMaskFormatter],
-                  validator: (value) => PersonalDataValidation.number(value),
-                ),
+validator: (value) {
+  if (value == null || value.isEmpty) {
+    return null;
+  }
+  return PersonalDataValidation.number(value);
+},               
+ ),
 
                 buildField(
-                  "Email (Opcional)", // Label atualizado
+                  "Email", // Label atualizado
                   emailController,
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {

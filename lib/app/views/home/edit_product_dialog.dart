@@ -29,26 +29,27 @@ class _EditProductDialogState extends State<EditProductDialog> {
   late TextEditingController brandController;
   late TextEditingController commissionController;
 
+  final List<String> unitOptions = ['UN', 'FD', 'CX', 'Saco', 'Kg'];
+
   final supabase = Supabase.instance.client;
   final ProductImageService imageService = ProductImageService();
-
   String selectedUnitType = 'UN';
   List<Map<String, dynamic>> unitTypes = [];
-  Future<void> loadUnitTypes() async {
-    final companyId = await AuthSessionService().getCompanyId();
+  //Future<void> loadUnitTypes() async {
+  //  final companyId = await AuthSessionService().getCompanyId();
+//
+  //  final response = await supabase
+    //    .from('unit_type')
+      //  .select('id, name')
+        //.eq('company_id', companyId)
+        //.order('name');
 
-    final response = await supabase
-        .from('unit_type')
-        .select('id, name')
-        .eq('company_id', companyId)
-        .order('name');
+    //if (!mounted) return;
 
-    if (!mounted) return;
-
-    setState(() {
-      unitTypes = List<Map<String, dynamic>>.from(response);
-    });
-  }
+    //setState(() {
+      //unitTypes = List<Map<String, dynamic>>.from(response);
+    //});
+ // }
 
   List<Map<String, dynamic>> categories = [];
 
@@ -60,7 +61,7 @@ class _EditProductDialogState extends State<EditProductDialog> {
   @override
   void initState() {
     super.initState();
-    loadUnitTypes();
+    //loadUnitTypes();
     nameController = TextEditingController(text: widget.product.name);
 
     priceController = TextEditingController(
@@ -82,6 +83,10 @@ class _EditProductDialogState extends State<EditProductDialog> {
 
     selectedUnitType = widget.product.unitType;
     loadCategories();
+
+    final String initialUnit = widget.product.unitType;
+    selectedUnitType = unitOptions.contains(initialUnit) ? initialUnit : 'UN';
+
   }
 
   Future<void> loadCategories() async {
@@ -306,23 +311,23 @@ class _EditProductDialogState extends State<EditProductDialog> {
                     const SizedBox(width: 10),
 
                     Expanded(
-                      child: DropdownButtonFormField<String>(
-                        value: selectedUnitType,
-                        decoration: _inputDecoration(label: 'Opção Unidade:'),
-                        dropdownColor: Colors.white,
-                        items: unitTypes.map((unit) {
-                          return DropdownMenuItem<String>(
-                            value: unit['name'],
-                            child: Text(unit['name']),
-                          );
-                        }).toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            selectedUnitType = value ?? 'UN';
-                          });
-                        },
-                      ),
-                    ),
+  child: DropdownButtonFormField<String>(
+  value: selectedUnitType, 
+  decoration: _inputDecoration(label: 'Opção Unidade:'),
+  dropdownColor: Colors.white,
+  items: unitOptions.map((String value) {
+    return DropdownMenuItem<String>(
+      value: value,
+      child: Text(value),
+    );
+  }).toList(),
+  onChanged: (value) {
+    setState(() {
+      selectedUnitType = value ?? 'UN';
+    });
+  },
+),
+),
                   ],
                 ),
 

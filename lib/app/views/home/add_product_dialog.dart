@@ -38,7 +38,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
   bool loading = false;
   bool isAdmin = false;
   String selectedUnitType = 'UN';
-  final List<String> unitOptions = ['UN', 'Fardo', 'Caixa', 'Saco', 'Kg'];
+  final List<String> unitOptions = ['UN', 'FD', 'CX', 'Saco', 'Kg'];
 
   List<Map<String, dynamic>> categories = [];
 

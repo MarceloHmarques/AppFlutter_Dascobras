@@ -86,7 +86,9 @@ selectedRouteId = widget.client.routeId?.toString();
 
       final emailValue = emailController.text.trim().isEmpty ? null : emailController.text.trim();
       final birthDateValue = birthDateController.text.trim().isEmpty ? null : birthDateController.text.trim();
-
+      final cpfOrCnpj = cpfController.text.trim().isEmpty ? null : cpfController.text.trim();
+      final phone = phoneController.text.trim().isEmpty ? null : phoneController.text.trim();
+      
       await context.read<ClientViewModel>().updateCustomer(
         id: widget.client.id.toString(), 
         name: nameController.text,
@@ -219,10 +221,8 @@ selectedRouteId = widget.client.routeId?.toString();
                   ],
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return customerType == 'PF'
-                          ? 'CPF obrigatório'
-                          : 'CNPJ obrigatório';
-                    }
+                       return null; 
+                     }
 
                     final valid = customerType == 'PF'
                         ? PersonalValidation.utilsCpf(value)

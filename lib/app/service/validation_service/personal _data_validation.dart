@@ -1,21 +1,20 @@
 class PersonalDataValidation {
-  static String? number(value) {
-    if (value == null || value.isEmpty) return 'Telefone obrigatório';
+ static String? number(String? value) {
+  if (value == null || value.isEmpty) {
+    return null; 
+  }  if (value.length != 15) return 'Telefone inválido';
 
-    if (value.length != 15) return 'Telefone inválido';
-
-    return null;
-  }
+  return null;
+}
 
   static String? email(String? value) {
-    if (value == null || value.isEmpty) return 'Email Obrigatório';
+  if (value == null || value.isEmpty) return null; 
 
-    final emailRegex = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
+  final emailRegex = RegExp(r'^[\w\-\.]+@([\w\-]+\.)+[\w\-]{2,4}$');
+  if (!emailRegex.hasMatch(value)) return 'Email inválido';
 
-    if (!emailRegex.hasMatch(value)) return 'Email inválido';
-
-    return null;
-  }
+  return null;
+}
 
   static String? name(String? value) {
     if ((value == null) || (value.isEmpty)) return 'Nome obrigatório';
