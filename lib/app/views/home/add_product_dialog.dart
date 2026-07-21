@@ -98,12 +98,13 @@ class _AddProductDialogState extends State<AddProductDialog> {
     }
   }
 
-  Future<String> uploadImage() async {
+  Future<String?> uploadImage() async {
+    // Se nenhuma imagem foi selecionada, retorna null de forma segura
     if (selectedImage == null) {
-      throw Exception('Imagem obrigatória.');
+      return null;
     }
 
-    return imageService.uploadImage(selectedImage!);
+    return await imageService.uploadImage(selectedImage!);
   }
 
   Future<void> saveProduct() async {
@@ -116,16 +117,12 @@ class _AddProductDialogState extends State<AddProductDialog> {
       return;
     }
 
-    if (selectedImage == null) {
-      setState(() {
-        imageError = 'Adicione uma imagem do produto.';
-      });
-      return;
-    }
+    // Validação de imagem obrigatória removida daqui! Agora é opcional.
 
     try {
       setState(() => loading = true);
 
+      // Faz o upload apenas se o usuário tiver selecionado uma imagem
       final imageUrl = await uploadImage();
 
       final cleanCommission = double.parse(
@@ -134,7 +131,7 @@ class _AddProductDialogState extends State<AddProductDialog> {
 
       await context.read<HomeSearchViewmodel>().addProduct(
         name: nameController.text.trim(),
-        imageurl: imageUrl,
+        imageurl: imageUrl ?? '', // Envia vazio ou ajusta conforme sua ViewModel
         price: double.parse(
           priceController.text.replaceAll('.', '').replaceAll(',', '.'),
         ),
