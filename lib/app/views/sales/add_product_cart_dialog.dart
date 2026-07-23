@@ -238,26 +238,17 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
                       ),
 
                       IconButton(
-                        style: IconButton.styleFrom(
-                          backgroundColor: const Color(0xFF0D3F87),
-                        ),
-                        onPressed: () {
-                          if (quantity < widget.product.stock) {
-                            setState(() {
-                              quantity++;
-                              quantityController.text = quantity.toString();
-                            });
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Estoque insuficiente!"),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        },
-                        icon: const Icon(Icons.add, color: Colors.white),
-                      ),
+  style: IconButton.styleFrom(
+    backgroundColor: const Color(0xFF0D3F87),
+  ),
+  onPressed: () {
+    setState(() {
+      quantity++;
+      quantityController.text = quantity.toString();
+    });
+  },
+  icon: const Icon(Icons.add, color: Colors.white),
+),
                     ],
                   ),
 
@@ -267,41 +258,37 @@ class _AddProductCartDialogState extends State<AddProductCartDialog> {
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0D3F87),
+                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF0D3F87),
                       ),
-                      onPressed: widget.product.stock == 0
-                          ? null
-                          : () {
-                              final qtd = int.tryParse(quantityController.text) ?? 0;
+                    onPressed: () {
+                    final qtd = int.tryParse(quantityController.text) ?? 0;
 
-                              if (qtd < 1) return;
-                              if (qtd > widget.product.stock) return;
+                    if (qtd < 1) return;
+                       final double? parsedPrice = double.tryParse(
+                     priceController.text.replaceAll(',', '.'),
+                      );
 
-                              final double? parsedPrice = double.tryParse(
-                                priceController.text.replaceAll(',', '.'),
-                              );
+                     final double? customPrice = 
+                    (parsedPrice != null && parsedPrice != widget.product.price) 
+                    ? parsedPrice 
+                    : null;
 
-                              final double? customPrice = 
-                                  (parsedPrice != null && parsedPrice != widget.product.price) 
-                                  ? parsedPrice 
-                                  : null;
+                    context.read<SaleViewModel>().addProduct(
+                      widget.product,
+                      qtd,
+                     customPrice: customPrice,
+                      );
 
-                              context.read<SaleViewModel>().addProduct(
-                                widget.product,
-                                qtd,
-                                customPrice: customPrice,
-                              );
-
-                              Navigator.pop(context);
-                            },
+                    Navigator.pop(context);
+                    },
                       icon: const Icon(
-                        Icons.shopping_cart,
-                        color: Colors.white,
+                      Icons.shopping_cart,
+                     color: Colors.white,
                       ),
-                      label: const Text(
-                        "Adicionar ao Carrinho",
-                        style: TextStyle(color: Colors.white, fontSize: 18),
+                       label: const Text(
+                          "Adicionar ao Carrinho",
+                           style: TextStyle(color: Colors.white, fontSize: 18),
                       ),
                     ),
                   ),

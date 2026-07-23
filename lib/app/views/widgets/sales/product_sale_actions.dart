@@ -13,14 +13,12 @@ class ProductSaleActions extends StatelessWidget {
     return ProductActionButton(
       color: Colors.green,
       icon: Icons.add,
-      onPressed: product.stock == 0
-          ? null
-          : () {
-              showDialog(
-                context: context,
-                builder: (_) => AddProductCartDialog(product: product),
-              );
-            },
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (_) => AddProductCartDialog(product: product),
+        );
+      },
     );
   }
 }
